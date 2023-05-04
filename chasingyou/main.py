@@ -2,6 +2,8 @@ import pygame
 import socket
 from utils import sysexit, pprint
 from player_sprite import PlayerSprite
+import json
+from threading import Thread
 
 pygame.init()
 
@@ -16,7 +18,7 @@ SCREEN_HEIGHT = 876 #pygame.display.Info().current_h * 0.9
 SCREEN_WIDTH = 1542 #pygame.display.Info().current_w * 0.9
 SPEED = 4
 FPS = 40
-BUFFERSIZE = 1024
+BUFFERSIZE = 1024*10
 SPRITE_POSITION = {
     "normal": (688, 102, 409, 506),
     "sliced": (712, 722, 409, 506),
@@ -103,6 +105,8 @@ def get_game_state():
     """
     payload = sock.recv(BUFFERSIZE).decode()
     print(payload)
+    print(json.loads(payload))
+    print("\n")
 
 def send_game_state():
     """Send movement data to server
@@ -138,18 +142,18 @@ def handle_movement(player: Player):
         pass
 
 # INITIALIZING OBJECTS & GAMEPLAY-RELATED VARIABLES
-players = []
 # players.append(Player(x=100, y=100, name="Blue", file_name="assets/blue.png", has_bomb=True))
 # players.append(Player(x=400, y=300, name="Red", file_name="assets/red.png"))
 # players.append(Player(x=800, y=300, name="Yellow", file_name="assets/yellow.png"))
 # players.append(Player(x=300, y=500, name="Brown", file_name="assets/brown.png"))
+
 def init():
     """Initialize the first state of the game (creating players...)"""
     pass
 
 def main():
     tick_counter = pygame.time.get_ticks()
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.music.play(-1)
     alpha = 255
     game_started = False
     running = True
@@ -167,7 +171,7 @@ def main():
         game_display.blit(TITLE, (SCREEN_WIDTH/2 - TITLE.get_size()[0]/2, 40)) # x, y
 
         # Check game status
-        get_game_state()
+        # get_game_state()
         
         # Update characters
         # handle_movement(players[0])
@@ -199,7 +203,8 @@ def main():
 if __name__ == "__main__":
     # open the socket connection
     try:
-        global sock
+        global sock, players_store
+        players_store = []
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         pprint("ATTEMPTING TO CONNECT TO SERVER")
         sock.connect(ADDR)
@@ -209,9 +214,18 @@ if __name__ == "__main__":
         else:
             PLAYER_NAME = input("Provide your ingame name: ")
             sock.send(PLAYER_NAME.encode())
-        pprint("STARTING MAIN GAME LOOP")
+        
         init()
+        
+        pprint("START THREADS RECEIVING/SENDING DATA")
+        t1 = Thread(target=get_game_state)
+        t2 = Thread(target=send_game_state)
+        t1.start()
+        t2.start()
+        pprint("STARTING MAIN GAME LOOP")
         main()
+        t1.join() # FIXME: this will never join, need to stop from inside
+        t2.join()
     except Exception as e:
         pprint("PROBLEM EXECUTING THE PROGRAM:", e)
         sysexit
