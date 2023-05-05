@@ -16,7 +16,7 @@ END = "\001\033[0m\002"
 
 
 def pprint(*args):
-    print(RED, "======== ", *args, END, flush=True)
+    print("\n", RED, "======== ", *args, END, flush=True)
 
 
 def sysexit():

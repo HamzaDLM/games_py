@@ -1,5 +1,4 @@
 """Main script for players"""
-import json
 import pickle
 import socket
 from time import sleep
@@ -8,7 +7,7 @@ from threading import Thread
 import pygame
 
 from player_sprite import PlayerSprite
-from utils import pprint, sysexit
+from utils import *
 
 # pylint: disable=no-member
 
@@ -26,7 +25,7 @@ ADDR = (HOST, PORT)
 SCREEN_HEIGHT = 876  # pygame.display.Info().current_h * 0.9
 SCREEN_WIDTH = 1542  # pygame.display.Info().current_w * 0.9
 SPEED = 4
-FPS = 20
+FPS = 40
 BUFFERSIZE = 1024 * 10
 SPRITE_POSITION = {
     "normal": (688, 102, 409, 506),
@@ -123,12 +122,14 @@ def get_game_state():
     If not, then only update certain things
     """
     while True:
-        print("get ", end="", flush=True)
         sleep(1)
+        print(GREEN, "-> Getting game state from", END, flush=True)
         global players_store
         payload = sock.recv(BUFFERSIZE)
         data = pickle.loads(payload)
-        if players_store:
+        print("G", data, flush=True)
+        # If players_store empty, then append players in it
+        if not players_store:
             for row in data:
                 players_store.append(
                     Player(
@@ -140,6 +141,7 @@ def get_game_state():
                         has_bomb=row["has_bomb"],
                     )
                 )
+        # If players already added to store, update them all except current player
         else:
             for row in data:
                 for player in players_store:
@@ -157,11 +159,13 @@ def get_game_state():
 def send_game_state():
     """Send movement data of the current player to server"""
     while True:
-        print("sent ", end="", flush=True)
         sleep(1)
+        print(ORANGE, "-> Sending game state to", END, flush=True)
         for player in players_store:
             if player.name == PLAYER_NAME:
-                sock.send(pickle.dumps(vars(player)))
+                print("S", vars(player), flush=True)
+                data = pickle.dumps(vars(player))
+                sock.send(data)
 
 
 def handle_movement(player: Player):
@@ -204,81 +208,63 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        # game_display.fill(WHITE)
         game_display.blit(BACKGROUND_IMAGE, (0, 0))
         game_display.blit(
             TITLE, (SCREEN_WIDTH / 2 - TITLE.get_size()[0] / 2, 40)
         )  # x, y
 
-        # Check game status
-        # get_game_state()
-
         # Update characters
         for player in players_store:
-            print(player.name, flush=True)
             if player.name == PLAYER_NAME:
                 handle_movement(player)
-                print("player info:", player.x, player.y, flush=True)
 
-        # Blit
+        # Display players
         for player in players_store:
             game_display.blit(
                 player.display_player(*SPRITE_POSITION["normal"]), (player.x, player.y)
             )
 
-        # build payload to send to server
-        # payload = {
-        #     player.x,
-        #     player.y,
-        #     player.name,
-        #     player.alive
-        # }
-        # Send current status
-        # send_game_state()
-
         pygame.display.flip()
-
         clock.tick(FPS)
 
     pygame.QUIT
 
 
 if __name__ == "__main__":
-    try:
-        global sock, players_store
-        players_store = []
+    global sock, players_store
+    players_store = []
 
-        # open the socket connection
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        pprint("ATTEMPTING TO CONNECT TO SERVER")
-        sock.connect(ADDR)
-        pprint("CONNECTED SUCCESFULLY TO SERVER")
+    # open the socket connection
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    pprint("ATTEMPTING TO CONNECT TO SERVER")
+    sock.connect(ADDR)
+    pprint("CONNECTED SUCCESFULLY TO SERVER")
 
-        if PLAYER_NAME:
-            sock.send(PLAYER_NAME.encode())
-        else:
-            PLAYER_NAME = input("Provide your ingame name: ")
-            sock.send(PLAYER_NAME.encode())
+    # Send player username to server
+    if PLAYER_NAME:
+        sock.send(PLAYER_NAME.encode())
+    else:
+        PLAYER_NAME = input("Provide your ingame name: ")
+        sock.send(PLAYER_NAME.encode())
 
-        started = sock.recv(BUFFERSIZE).decode()
-        if started == "Game Started":
-            pprint("GAME STARTED:", started)
-        else:
-            sysexit()
-
-        pprint("START THREADS RECEIVING/SENDING DATA")
-        t1 = Thread(target=get_game_state)
-        t2 = Thread(target=send_game_state)
-
-        t1.start()
-        t2.start()
-
-        pprint("STARTING MAIN GAME LOOP")
-        main()
-
-        t1.join()  # FIXME: this will never join, need to stop from inside
-        t2.join()
-
-    except Exception as e:
-        pprint("PROBLEM EXECUTING THE PROGRAM:", e)
+    # Receive indication that game started
+    started = sock.recv(BUFFERSIZE).decode()
+    if started == "Game Started":
+        pprint("GAME STARTED:", started)
+    else:
+        print("Error receiving game starting alert.")
         sysexit()
+
+    pprint("START THREADS FOR EXCHANGING DATA WITH SERVER")
+    t1 = Thread(target=get_game_state)
+    t2 = Thread(target=send_game_state)
+
+    t1.start()
+    t2.start()
+
+    main()
+
+    t1.join()  # FIXME: this will never join, need to stop from inside
+    t2.join()
+
+    sock.close()

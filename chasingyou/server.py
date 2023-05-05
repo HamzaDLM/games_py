@@ -13,13 +13,12 @@ Game flow:
 """
 import random
 import socket
-import json
 import pickle
 from time import sleep
 from threading import Thread
 
 from player_sprite import PlayerSprite
-from utils import pprint, sysexit
+from utils import *
 
 # pylint: disable=no-member
 
@@ -61,7 +60,7 @@ def gather_players():
 
         client_socket, client_address = server_socket.accept()
 
-        client_username = client_socket.recv(BUFFERSIZE)
+        client_username = client_socket.recv(BUFFERSIZE).decode()
 
         if not client_username:
             pprint("STOPPED WAITING FOR PLAYERS TO CONNECT")
@@ -91,22 +90,21 @@ def gather_players():
 def get_player_state(player_info: dict):
     """Receiving player state"""
 
-    player_socket, player = player_info["socket"], player_info["player"]
+    player_socket, player_obj = player_info["socket"], player_info["player"]
 
     while game_running:
         sleep(1)
-
-        # print("-> Getting game state from:", player.name)
-        print("get ", end="", flush=True)
+        print(GREEN, "-> Getting game state from:", player_obj.name, END, flush=True)
 
         try:
             data = player_socket.recv(BUFFERSIZE)
             data = pickle.loads(data)
+            print(data, flush=True)
             if data == "":
-                print("Received empty payload when getting game state")
+                print("Received empty payload when getting game state", flush=True)
                 break
         except Exception as err:  # User might have disconnected
-            print("Exception when getting game state:", err)
+            print("Exception when getting game state:", err, flush=True)
             break
 
         for player in players_store:
@@ -129,15 +127,15 @@ def send_game_state(player_info: dict):
 
     while game_running:
         sleep(1)
-        # print("-> Sending game state to:", player.name.decode("utf-8"))
-        print("send ", end="", flush=True)
+        print(ORANGE, "-> Sending game state to:", player.name, END, flush=True)
 
         data = [vars(player["player"]) for player in players_store]
         for row in data:
             if "_Sprite__g" in row.keys():
                 row.pop("_Sprite__g")
-        player_socket.send(pickle.dumps(data))
-        # pprint("SENT DATA TO USER:", player.name.decode("utf-8"))
+        print(data, flush=True)
+        data = pickle.dumps(data)
+        player_socket.send(data)
 
     print("Removed the disconnected player")
     players_store.remove(player_info)
