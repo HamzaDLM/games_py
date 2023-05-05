@@ -22,7 +22,7 @@ from utils import *
 
 # pylint: disable=no-member
 
-HOST = socket.gethostbyname(socket.gethostname())
+HOST = "192.168.1.5"  # socket.gethostbyname(socket.gethostname())
 PORT = 9999
 ADDR = (HOST, PORT)
 BUFFERSIZE = 1024

@@ -17,9 +17,7 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PLAYER_NAME = input("Provide your ingame name: ")
-HOST = socket.gethostbyname(
-    socket.gethostname()
-)  # input("Provide the host server IP: ")
+HOST = "192.168.1.5"  # input("Provide the host server IP: ") #socket.gethostbyname(socket.gethostname())
 PORT = 9999  # int(input("Provide the host server PORT: "))
 ADDR = (HOST, PORT)
 SCREEN_HEIGHT = 876  # pygame.display.Info().current_h * 0.9
