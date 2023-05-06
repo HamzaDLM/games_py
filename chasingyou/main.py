@@ -1,13 +1,14 @@
 """Main script for players"""
 import pickle
 import socket
-from time import sleep
 from threading import Thread
+from time import sleep
+import asyncio
 
 import pygame
 
 from player_sprite import PlayerSprite
-from utils import *
+from utils import END, GREEN, ORANGE, pprint, sysexit
 
 # pylint: disable=no-member
 
@@ -17,7 +18,7 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PLAYER_NAME = input("Provide your ingame name: ")
-HOST = "192.168.1.5"  # input("Provide the host server IP: ") #socket.gethostbyname(socket.gethostname())
+HOST = "192.168.1.5"  # input("Provide the host server IP: ")
 PORT = 9999  # int(input("Provide the host server PORT: "))
 ADDR = (HOST, PORT)
 SCREEN_HEIGHT = 876  # pygame.display.Info().current_h * 0.9
@@ -114,7 +115,7 @@ class Player(PlayerSprite):
 
 
 # GAME LOGIC
-def get_game_state():
+async def get_game_state():
     """Get data of other players from server
     If first time inserting players data, insert all regardless
     If not, then only update certain things
@@ -123,7 +124,7 @@ def get_game_state():
         sleep(1)
         print(GREEN, "-> Getting game state from", END, flush=True)
         global players_store
-        payload = sock.recv(BUFFERSIZE)
+        payload = await sock.recv(BUFFERSIZE)
         data = pickle.loads(payload)
         print("G", data, flush=True)
         # If players_store empty, then append players in it
@@ -154,7 +155,7 @@ def get_game_state():
                         )
 
 
-def send_game_state():
+async def send_game_state():
     """Send movement data of the current player to server"""
     while True:
         sleep(1)
@@ -163,7 +164,7 @@ def send_game_state():
             if player.name == PLAYER_NAME:
                 print("S", vars(player), flush=True)
                 data = pickle.dumps(vars(player))
-                sock.send(data)
+                await sock.send(data)
 
 
 def handle_movement(player: Player):
@@ -194,7 +195,7 @@ def main():
     """Main game loop function"""
     pprint("STARTED MAIN LOOP")
     tick_counter = pygame.time.get_ticks()
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(-1)
     alpha = 255
     game_started = False
     running = True
@@ -254,15 +255,15 @@ if __name__ == "__main__":
         sysexit()
 
     pprint("START THREADS FOR EXCHANGING DATA WITH SERVER")
-    t1 = Thread(target=get_game_state)
-    t2 = Thread(target=send_game_state)
+    # t1 = Thread(target=get_game_state)
+    # t2 = Thread(target=send_game_state)
 
-    t1.start()
-    t2.start()
+    # t1.start()
+    # t2.start()
 
-    main()
+    # main()
 
-    t1.join()  # FIXME: this will never join, need to stop from inside
-    t2.join()
+    # t1.join()  # FIXME: this will never join, need to stop from inside
+    # t2.join()
 
     sock.close()

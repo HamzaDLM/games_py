@@ -18,7 +18,7 @@ from time import sleep
 from threading import Thread
 
 from player_sprite import PlayerSprite
-from utils import *
+from utils import pprint, sysexit, END, ORANGE, GREEN
 
 # pylint: disable=no-member
 
