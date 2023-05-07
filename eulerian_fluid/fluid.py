@@ -43,10 +43,10 @@ class Fluid:
         diffuse(0, self.s, self.density, self.diff, self.dt, self.iter, self.size)
         advect(0, self.density, self.s, self.Vx, self.Vy, self.dt, self.size)
 
-    def fade_density(self):
+    def fade_density(self, amount):
         for i in range(0, len(self.density)):
             if self.density[i] > 0:
-                self.density[i] -= 1
+                self.density[i] -= amount
 
 
 def diffuse(
