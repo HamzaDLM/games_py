@@ -65,7 +65,9 @@ def constrain(value, minimum, maximum):
         return value
 
 
-def IX(x: int, y: int, N: int = 64) -> int:  # TODO: Fix value for N (should be dynamic)
+def IX(
+    x: int, y: int, N: int = 128
+) -> int:  # TODO: Fix value for N (should be dynamic)
     """Return 2D location as a 1D index"""
     x = constrain(x, 0, N - 1)
     y = constrain(y, 0, N - 1)
@@ -180,7 +182,7 @@ def advect(
     set_bnd(b, d, N)
 
 
-def set_bnd(b: int, x: list[float], N: int = 64) -> None:
+def set_bnd(b: int, x: list[float], N: int = 128) -> None:
     """a way to keep fluid from leaking out of your box"""
 
     for i in range(1, N - 1):

@@ -10,9 +10,9 @@ from fluid import Fluid, IX
 pygame.init()
 
 # Animation vars
-N: int = 64
+N: int = 128
 iter = 16
-SCALE = 10
+SCALE = 5
 
 # Window vars
 SCREEN_HEIGHT: int = N * SCALE
