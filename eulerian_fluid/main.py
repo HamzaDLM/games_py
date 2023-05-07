@@ -81,10 +81,9 @@ while True:
                     fluid1.add_density(cx, cy, 100)
                     fluid1.add_velocity(cx, cy, 1, 1)
 
-    print()
     fluid1.step()
     render_density(fluid1.density)
-    # fluid1.fade_density()
+    fluid1.fade_density()
 
     f = str(clock.get_fps())
     fps_text = H3.render(f, True, WHITE)
