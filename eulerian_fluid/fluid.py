@@ -20,6 +20,7 @@ class Fluid:
     def add_density(self, x: int, y: int, amount: int) -> None:
         """Add density to the element that will be added to the water (e.g. soy sauce)"""
         index = IX(x, y)
+        print("added density")
         self.density[index] += amount
 
     def add_velocity(self, x: int, y: int, amount_x: float, amount_y: float) -> None:

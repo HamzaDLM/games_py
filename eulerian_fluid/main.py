@@ -36,6 +36,7 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("Fluid simulation")
 dragging = False
 
+# Initialize a fluid instance
 fluid1 = Fluid(N=N, dt=0.1, diffussion=0, viscosity=0, iter=iter)
 
 
