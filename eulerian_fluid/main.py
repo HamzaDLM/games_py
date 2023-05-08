@@ -1,18 +1,22 @@
 """
 Fluid simulation in PyGame.
 Reference: https://mikeash.com/pyblog/fluid-simulation-for-dummies.html
+TODO
+- blit general info on the screen (N, iter, Scale, fade speed, density...)
+- replace all list with numpy arrays
 """
 import random
 import pygame
+from threading import Thread
 
-from fluid import Fluid, IX
+from fluid_caching import Fluid, IX
 
 pygame.init()
 
 # Animation vars
 N: int = 128
 iter = 16
-SCALE = 5
+SCALE = 10
 
 # Window vars
 SCREEN_HEIGHT: int = N * SCALE
@@ -61,6 +65,14 @@ def render_density(density: list[float]):
             pygame.draw.rect(canvas, color, rect)
 
 
+# def stepping():
+#     while True:
+#         fluid1.step()
+#         print("Done")
+
+
+# Thread(target=stepping).start()
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -83,11 +95,11 @@ while True:
 
     fluid1.step()
     render_density(fluid1.density)
-    fluid1.fade_density(amount=30)
+    fluid1.fade_density(amount=1)
 
-    f = str(clock.get_fps())
+    f = f"FPS: {clock.get_fps()}"
     fps_text = H3.render(f, True, WHITE)
-    canvas.blit(fps_text, (0, 0))
+    canvas.blit(fps_text, (10, 10))
 
     pygame.display.flip()
     clock.tick(FPS)

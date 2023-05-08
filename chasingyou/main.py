@@ -18,7 +18,7 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PLAYER_NAME = input("Provide your ingame name: ")
-HOST = "192.168.1.5"  # input("Provide the host server IP: ")
+HOST = "localhost"  # input("Provide the host server IP: ")
 PORT = 9999  # int(input("Provide the host server PORT: "))
 ADDR = (HOST, PORT)
 SCREEN_HEIGHT = 876  # pygame.display.Info().current_h * 0.9
@@ -115,7 +115,7 @@ class Player(PlayerSprite):
 
 
 # GAME LOGIC
-async def get_game_state():
+def get_game_state():
     """Get data of other players from server
     If first time inserting players data, insert all regardless
     If not, then only update certain things
@@ -124,7 +124,7 @@ async def get_game_state():
         sleep(1)
         print(GREEN, "-> Getting game state from", END, flush=True)
         global players_store
-        payload = await sock.recv(BUFFERSIZE)
+        payload = sock.recv(BUFFERSIZE)
         data = pickle.loads(payload)
         print("G", data, flush=True)
         # If players_store empty, then append players in it
@@ -155,7 +155,7 @@ async def get_game_state():
                         )
 
 
-async def send_game_state():
+def send_game_state():
     """Send movement data of the current player to server"""
     while True:
         sleep(1)
@@ -164,7 +164,7 @@ async def send_game_state():
             if player.name == PLAYER_NAME:
                 print("S", vars(player), flush=True)
                 data = pickle.dumps(vars(player))
-                await sock.send(data)
+                sock.send(data)
 
 
 def handle_movement(player: Player):
@@ -220,7 +220,7 @@ def main():
         # Display players
         for player in players_store:
             game_display.blit(
-                player.display_player(*SPRITE_POSITION["normal"]), (player.x, player.y)
+                player.display_player(*SPRITE_POSITION["dead"]), (player.x, player.y)
             )
 
         pygame.display.flip()
@@ -255,15 +255,15 @@ if __name__ == "__main__":
         sysexit()
 
     pprint("START THREADS FOR EXCHANGING DATA WITH SERVER")
-    # t1 = Thread(target=get_game_state)
-    # t2 = Thread(target=send_game_state)
+    t1 = Thread(target=get_game_state)
+    t2 = Thread(target=send_game_state)
 
-    # t1.start()
-    # t2.start()
+    t1.start()
+    t2.start()
 
-    # main()
+    main()
 
-    # t1.join()  # FIXME: this will never join, need to stop from inside
-    # t2.join()
+    t1.join()  # FIXME: this will never join, need to stop from inside
+    t2.join()
 
     sock.close()
