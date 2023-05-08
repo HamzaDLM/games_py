@@ -3,20 +3,22 @@ from functools import lru_cache
 
 
 class Fluid:
-    def __init__(
-        self, N: int, dt: float, diffussion: float, viscosity: float, iter: int
-    ) -> None:
-        self.size = N
+    N: int = 128  # size (how many squares)
+    iterations: int = 5
+
+    def __init__(self, dt: float, diffussion: float, viscosity: float) -> None:
         self.dt = dt
         self.diff = diffussion
         self.visc = viscosity
-        self.s: list[float] = [0] * (N * N)
-        self.density: list[float] = [0] * (N * N)
-        self.Vx: list[float] = [0] * (N * N)
-        self.Vy: list[float] = [0] * (N * N)
-        self.Vx0: list[float] = [0] * (N * N)
-        self.Vy0: list[float] = [0] * (N * N)
-        self.iter = iter
+
+        self.s: list[float] = [0] * (self.N * self.N)
+        self.density: list[float] = [0] * (self.N * self.N)
+
+        self.Vx: list[float] = [0] * (self.N * self.N)
+        self.Vy: list[float] = [0] * (self.N * self.N)
+
+        self.Vx0: list[float] = [0] * (self.N * self.N)
+        self.Vy0: list[float] = [0] * (self.N * self.N)
 
     def add_density(self, x: int, y: int, amount: int) -> None:
         """Add density to the element that will be added to the water (e.g. soy sauce)"""
@@ -31,18 +33,18 @@ class Fluid:
     def step(self) -> None:
         """Go through time with the fluid"""
 
-        diffuse(1, self.Vx0, self.Vx, self.visc, self.dt, self.iter, self.size)
-        diffuse(2, self.Vy0, self.Vy, self.visc, self.dt, self.iter, self.size)
+        diffuse(1, self.Vx0, self.Vx, self.visc, self.dt, self.iterations, self.N)
+        diffuse(2, self.Vy0, self.Vy, self.visc, self.dt, self.iterations, self.N)
 
-        project(self.Vx0, self.Vy0, self.Vx, self.Vy, self.iter, self.size)
+        project(self.Vx0, self.Vy0, self.Vx, self.Vy, self.iterations, self.N)
 
-        advect(1, self.Vx, self.Vx0, self.Vx0, self.Vy0, self.dt, self.size)
-        advect(2, self.Vy, self.Vy0, self.Vx0, self.Vy0, self.dt, self.size)
+        advect(1, self.Vx, self.Vx0, self.Vx0, self.Vy0, self.dt, self.N)
+        advect(2, self.Vy, self.Vy0, self.Vx0, self.Vy0, self.dt, self.N)
 
-        project(self.Vx, self.Vy, self.Vx0, self.Vy0, self.iter, self.size)
+        project(self.Vx, self.Vy, self.Vx0, self.Vy0, self.iterations, self.N)
 
-        diffuse(0, self.s, self.density, self.diff, self.dt, self.iter, self.size)
-        advect(0, self.density, self.s, self.Vx, self.Vy, self.dt, self.size)
+        diffuse(0, self.s, self.density, self.diff, self.dt, self.iterations, self.N)
+        advect(0, self.density, self.s, self.Vx, self.Vy, self.dt, self.N)
 
     def fade_density(self, amount):
         for i in range(0, len(self.density)):
@@ -57,7 +59,7 @@ def diffuse(
     lin_solve(b, x, x0, a, 1 + 6 * a, iter, N)
 
 
-@lru_cache(maxsize=128 * 128)
+@lru_cache(maxsize=Fluid.N * Fluid.N)
 def constrain(value, minimum, maximum):
     if value < minimum:
         return minimum
@@ -67,9 +69,9 @@ def constrain(value, minimum, maximum):
         return value
 
 
-@lru_cache(maxsize=128 * 128)
+@lru_cache(maxsize=Fluid.N * Fluid.N)
 def IX(
-    x: int, y: int, N: int = 128
+    x: int, y: int, N: int = Fluid.N
 ) -> int:  # TODO: Fix value for N (should be dynamic)
     """Return 2D location as a 1D index"""
     x = constrain(x, 0, N - 1)
@@ -185,7 +187,7 @@ def advect(
     set_bnd(b, d, N)
 
 
-def set_bnd(b: int, x: list[float], N: int = 128) -> None:
+def set_bnd(b: int, x: list[float], N: int = Fluid.N) -> None:
     """a way to keep fluid from leaking out of your box"""
 
     for i in range(1, N - 1):

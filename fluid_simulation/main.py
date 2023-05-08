@@ -1,14 +1,16 @@
 """Fluid simulation in PyGame."""
+import random
+
 import pygame
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+
 from fluid import Fluid, IX, constrain
 
 pygame.init()
 
 # Generic vars
-N: int = 128
-iter = 16
-SCALE = 10
+N: int = Fluid.N
+iter = Fluid.iterations
+SCALE = 4
 
 # Window vars
 SCREEN_HEIGHT: int = N * SCALE
@@ -33,10 +35,10 @@ pygame.display.set_caption("Fluid simulation")
 dragging = False
 
 # Initialize a fluid instance
-fluid1 = Fluid(N=N, dt=0.1, diffussion=0, viscosity=0, iter=iter)
+fluid1 = Fluid(dt=0.2, diffussion=0, viscosity=0.0000001)
 
 
-def render_density(density: list[float]):
+def render_density(density: list[float]) -> None:
     for i in range(0, N):
         for j in range(0, N):
             x = i * SCALE
@@ -47,8 +49,6 @@ def render_density(density: list[float]):
             rect = pygame.Rect(x, y, SCALE, SCALE)
             pygame.draw.rect(canvas, color, rect)
 
-
-executor = ProcessPoolExecutor(max_workers=6)
 
 while True:
     for event in pygame.event.get():
@@ -67,14 +67,14 @@ while True:
                 if 0 < mouse_x < N * SCALE and 0 < mouse_y < N * SCALE:
                     cx = int(mouse_x / SCALE)
                     cy = int(mouse_y / SCALE)
-                    fluid1.add_density(cx, cy, 100)
+                    fluid1.add_density(cx, cy, random.randint(50, 150))
                     fluid1.add_velocity(cx, cy, 1, 1)
 
-    executor.submit(fluid1.step())
+    fluid1.step()
     render_density(fluid1.density)
-    fluid1.fade_density(amount=10)
+    fluid1.fade_density(amount=12)
 
-    f = f"FPS: {clock.get_fps()}"
+    f = f"FPS: {round(clock.get_fps(), 1)}"
     fps_text = H3.render(f, True, WHITE)
     canvas.blit(fps_text, (10, 10))
 
