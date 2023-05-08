@@ -5,9 +5,11 @@ Settings: step() executed 5 times
 fluid               : 119_677_044 function calls in 37.972 seconds
 cached by lru_cache : 7_529_542 function calls in 11.470 seconds
 diy memoization     : 40_259_525 function calls (40226733 primitive calls) in 20.035 seconds
-cython              : 
+numba               : 33_436_012 function calls (32812989 primitive calls) in 13.193 seconds
+numpy               : TODO
+cython              : TODO
 """
-from fluid_caching import Fluid
+from fluid import Fluid
 import cProfile
 import pstats
 

@@ -1,17 +1,5 @@
-# cython: language_level=3
-"""
-Reimplement fluid module using Cython for performance enhancement
-"""
-
 import math
-import time
-import cython
-
-if cython.compiled:
-    from cython.cimports.libc.stdlib import PyMem_Malloc  # type: ignore
-else:
-    import array
-    from random import random
+from functools import lru_cache
 
 
 class Fluid:
@@ -30,22 +18,19 @@ class Fluid:
         self.Vy0: list[float] = [0] * (N * N)
         self.iter = iter
 
-    @cython.cfunc
     def add_density(self, x: int, y: int, amount: int) -> None:
         """Add density to the element that will be added to the water (e.g. soy sauce)"""
         index = IX(x, y)
         self.density[index] += amount
 
-    @cython.cfunc
     def add_velocity(self, x: int, y: int, amount_x: float, amount_y: float) -> None:
         index = IX(x, y)
         self.Vx[index] += amount_x
         self.Vy[index] += amount_y
 
-    @cython.cfunc
     def step(self) -> None:
         """Go through time with the fluid"""
-        start = time.time()
+
         diffuse(1, self.Vx0, self.Vx, self.visc, self.dt, self.iter, self.size)
         diffuse(2, self.Vy0, self.Vy, self.visc, self.dt, self.iter, self.size)
 
@@ -58,16 +43,13 @@ class Fluid:
 
         diffuse(0, self.s, self.density, self.diff, self.dt, self.iter, self.size)
         advect(0, self.density, self.s, self.Vx, self.Vy, self.dt, self.size)
-        print("Step took:", time.time() - start)
 
-    @cython.cfunc
     def fade_density(self, amount):
         for i in range(0, len(self.density)):
             if self.density[i] > 0:
                 self.density[i] -= amount
 
 
-@cython.cfunc
 def diffuse(
     b: int, x: list[float], x0: list[float], diff: float, dt: float, iter: int, N: int
 ) -> None:
@@ -75,7 +57,7 @@ def diffuse(
     lin_solve(b, x, x0, a, 1 + 6 * a, iter, N)
 
 
-@cython.cfunc
+@lru_cache(maxsize=128 * 128)
 def constrain(value, minimum, maximum):
     if value < minimum:
         return minimum
@@ -85,7 +67,7 @@ def constrain(value, minimum, maximum):
         return value
 
 
-@cython.cfunc
+@lru_cache(maxsize=128 * 128)
 def IX(
     x: int, y: int, N: int = 128
 ) -> int:  # TODO: Fix value for N (should be dynamic)
@@ -95,12 +77,11 @@ def IX(
     return int(x + y * N)
 
 
-@cython.cfunc
 def lin_solve(
     b: int, x: list[float], x0: list[float], a: float, c: float, iter: int, N: int
 ) -> None:
     cRecip: float = 1.0 / c
-    for k in range(0, iter):
+    for _ in range(0, iter):
         for j in range(1, N - 1):
             for i in range(1, N - 1):
                 x[IX(i, j)] = (
@@ -117,7 +98,6 @@ def lin_solve(
         set_bnd(b, x, N)
 
 
-@cython.cfunc
 def project(
     velocX: list[float],
     velocY: list[float],
@@ -152,7 +132,6 @@ def project(
     set_bnd(2, velocY, N)
 
 
-@cython.cfunc
 def advect(
     b: int,
     d: list[float],
@@ -206,7 +185,6 @@ def advect(
     set_bnd(b, d, N)
 
 
-@cython.cfunc
 def set_bnd(b: int, x: list[float], N: int = 128) -> None:
     """a way to keep fluid from leaking out of your box"""
 
@@ -226,13 +204,9 @@ def set_bnd(b: int, x: list[float], N: int = 128) -> None:
             x[IX(0, j)] = x[IX(1, j)]
             x[IX(N - 1, j)] = x[IX(N - 2, j)]
 
-    x[IX(0, 0, 0)] = 0.33 * (x[IX(1, 0, 0)] + x[IX(0, 1, 0)] + x[IX(0, 0, 1)])
-    x[IX(0, N - 1, 0)] = 0.33 * (
-        x[IX(1, N - 1, 0)] + x[IX(0, N - 2, 0)] + x[IX(0, N - 1, 1)]
-    )
-    x[IX(N - 1, 0, 0)] = 0.33 * (
-        x[IX(N - 2, 0, 0)] + x[IX(N - 1, 1, 0)] + x[IX(N - 1, 0, 1)]
-    )
-    x[IX(N - 1, N - 1, 0)] = 0.33 * (
-        x[IX(N - 2, N - 1, 0)] + x[IX(N - 1, N - 2, 0)] + x[IX(N - 1, N - 1, 1)]
+    x[IX(0, 0)] = 0.33 * (x[IX(1, 0)] + x[IX(0, 1)] + x[IX(0, 0)])
+    x[IX(0, N - 1)] = 0.33 * (x[IX(1, N - 1)] + x[IX(0, N - 2)] + x[IX(0, N - 1)])
+    x[IX(N - 1, 0)] = 0.33 * (x[IX(N - 2, 0)] + x[IX(N - 1, 1)] + x[IX(N - 1, 0)])
+    x[IX(N - 1, N - 1)] = 0.33 * (
+        x[IX(N - 2, N - 1)] + x[IX(N - 1, N - 2)] + x[IX(N - 1, N - 1)]
     )

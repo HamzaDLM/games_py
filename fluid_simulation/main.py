@@ -1,19 +1,11 @@
-"""
-Fluid simulation in PyGame.
-Reference: https://mikeash.com/pyblog/fluid-simulation-for-dummies.html
-TODO
-- blit general info on the screen (N, iter, Scale, fade speed, density...)
-- replace all list with numpy arrays
-"""
-import random
+"""Fluid simulation in PyGame."""
 import pygame
-from threading import Thread
-
-from fluid_caching import Fluid, IX
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from fluid import Fluid, IX, constrain
 
 pygame.init()
 
-# Animation vars
+# Generic vars
 N: int = 128
 iter = 16
 SCALE = 10
@@ -22,7 +14,7 @@ SCALE = 10
 SCREEN_HEIGHT: int = N * SCALE
 SCREEN_WIDTH: int = N * SCALE
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-FPS: int = 40
+FPS: int = 120
 
 # Colors
 BLACK = (0, 0, 0)
@@ -44,15 +36,6 @@ dragging = False
 fluid1 = Fluid(N=N, dt=0.1, diffussion=0, viscosity=0, iter=iter)
 
 
-def constrain(value, minimum, maximum):
-    if value < minimum:
-        return minimum
-    elif value > maximum:
-        return maximum
-    else:
-        return value
-
-
 def render_density(density: list[float]):
     for i in range(0, N):
         for j in range(0, N):
@@ -65,13 +48,7 @@ def render_density(density: list[float]):
             pygame.draw.rect(canvas, color, rect)
 
 
-# def stepping():
-#     while True:
-#         fluid1.step()
-#         print("Done")
-
-
-# Thread(target=stepping).start()
+executor = ProcessPoolExecutor(max_workers=6)
 
 while True:
     for event in pygame.event.get():
@@ -93,9 +70,9 @@ while True:
                     fluid1.add_density(cx, cy, 100)
                     fluid1.add_velocity(cx, cy, 1, 1)
 
-    fluid1.step()
+    executor.submit(fluid1.step())
     render_density(fluid1.density)
-    fluid1.fade_density(amount=1)
+    fluid1.fade_density(amount=10)
 
     f = f"FPS: {clock.get_fps()}"
     fps_text = H3.render(f, True, WHITE)
