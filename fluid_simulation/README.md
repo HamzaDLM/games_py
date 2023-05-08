@@ -17,6 +17,8 @@ $$
 \end{equation}
 $$
 
-<p style="align:center;">Navier-Stokes equation (general form)</p>
+<p align="center">
+Navier-Stokes equation (general form)
+</p>
 
 PS: Not an academic work, just a for fun thing.
