@@ -27,15 +27,30 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
 # Text fonts
-H3 = pygame.font.Font(None, 28)
+H3 = pygame.font.Font(None, 24)
 
 canvas = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Fluid simulation")
 dragging = False
 
+stats = f"""
+Size: {N}
+Iterations: {iter} 
+"""
+info = H3.render("Drag to change velocity/density.", True, WHITE)
+
 # Initialize a fluid instance
 fluid1 = Fluid(dt=0.2, diffussion=0, viscosity=0.0000001)
+
+
+def multiline_text(t: str, x: int, y: int, font_size):
+    t = t.strip().split("\n")
+    offset = 0
+    for line in t:
+        text = H3.render(line, True, WHITE)
+        canvas.blit(text, (x, y + offset))
+        offset += font_size
 
 
 def render_density(density: list[float]) -> None:
@@ -55,6 +70,7 @@ while True:
         if event.type == pygame.QUIT:
             break
         canvas.fill(BLACK)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 dragging = True
@@ -77,6 +93,9 @@ while True:
     f = f"FPS: {round(clock.get_fps(), 1)}"
     fps_text = H3.render(f, True, WHITE)
     canvas.blit(fps_text, (10, 10))
+    canvas.blit(info, (10, SCREEN_WIDTH - 28))
+
+    multiline_text(stats, 10, 28, 20)
 
     pygame.display.flip()
     clock.tick(FPS)
