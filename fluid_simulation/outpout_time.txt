@@ -1,0 +1,22 @@
+Tue May  9 01:45:54 2023    output.dat
+
+         493294 function calls in 6.437 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       25    5.456    0.218    5.546    0.222 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:82(lin_solve)
+       15    0.511    0.034    0.540    0.036 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:137(advect)
+       10    0.342    0.034    2.530    0.253 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:103(project)
+      430    0.093    0.000    0.093    0.000 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:190(set_bnd)
+   476280    0.026    0.000    0.026    0.000 {built-in method math.floor}
+    16383    0.009    0.000    0.009    0.000 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:72(IX)
+        5    0.000    0.000    6.437    1.287 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:33(step)
+        1    0.000    0.000    6.437    6.437 {built-in method builtins.exec}
+       15    0.000    0.000    3.366    0.224 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:55(diffuse)
+      127    0.000    0.000    0.000    0.000 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/fluid.py:62(constrain)
+        1    0.000    0.000    6.437    6.437 /home/d1gitalw4rfare/Desktop/root/repo/simulations_and_games/fluid_simulation/perf.py:21(main)
+        1    0.000    0.000    6.437    6.437 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

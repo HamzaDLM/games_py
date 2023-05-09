@@ -1,6 +1,6 @@
 """
 Performance check on the fluid module
-Settings: step() executed 5 times
+Settings: step() executed 5 times, N = 128, t = 0.1, Iter = 15
 
 fluid               : 119_677_044 function calls in 37.972 seconds
 cached by lru_cache : 7_529_542 function calls in 11.470 seconds
@@ -13,7 +13,7 @@ from fluid import Fluid
 import cProfile
 import pstats
 
-fluid1 = Fluid(128, 0.1, 0, 0, 15)
+fluid1 = Fluid(0.1, 0, 0)
 
 fluid1.add_density(10, 10, 100)
 

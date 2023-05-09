@@ -188,23 +188,13 @@ def advect(
 
 
 def set_bnd(b: int, x: list[float], N: int = Fluid.N) -> None:
-    """a way to keep fluid from leaking out of your box"""
+    """a way to keep fluid from leaking out of the box"""
 
     for i in range(1, N - 1):
-        if b == 2:
-            x[IX(i, 0)] = -x[IX(i, 1)]
-            x[IX(i, N - 1)] = -x[IX(i, N - 2)]
-        else:
-            x[IX(i, 0)] = x[IX(i, 1)]
-            x[IX(i, N - 1)] = x[IX(i, N - 2)]
-
-    for j in range(1, N - 1):
-        if b == 1:
-            x[IX(0, j)] = -x[IX(1, j)]
-            x[IX(N - 1, j)] = -x[IX(N - 2, j)]
-        else:
-            x[IX(0, j)] = x[IX(1, j)]
-            x[IX(N - 1, j)] = x[IX(N - 2, j)]
+        x[IX(i, 0)] = -x[IX(i, 1)] if b == 2 else x[IX(i, 1)]
+        x[IX(i, N - 1)] = -x[IX(i, N - 2)] if b == 2 else x[IX(i, N - 2)]
+        x[IX(0, i)] = -x[IX(1, i)] if b == 1 else x[IX(1, i)]
+        x[IX(N - 1, i)] = -x[IX(N - 2, i)] if b == 1 else x[IX(N - 2, i)]
 
     x[IX(0, 0)] = 0.33 * (x[IX(1, 0)] + x[IX(0, 1)] + x[IX(0, 0)])
     x[IX(0, N - 1)] = 0.33 * (x[IX(1, N - 1)] + x[IX(0, N - 2)] + x[IX(0, N - 1)])
