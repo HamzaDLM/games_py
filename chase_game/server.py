@@ -158,7 +158,7 @@ def main() -> None:
     gather.start()
 
     _ = input("Type anything to start the game: ")
-    _ = input("Are you sure you wanna start the game? : ")
+    _ = input("Confirm you wanna start the game? : ")
 
     stop_listening()
 
@@ -183,9 +183,6 @@ def main() -> None:
         thread1.start()
         thread2.start()
 
-        thread1.join()
-        thread2.join()
-
     pprint("FINISHED THE GAME")
 
 
@@ -201,4 +198,5 @@ if __name__ == "__main__":
         server_socket.close()
         pprint("EXITING THE GAME")
         sysexit()
-    server_socket.close()
+    finally:
+        server_socket.close()

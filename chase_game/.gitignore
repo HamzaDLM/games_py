@@ -1,4 +1,2 @@
 venv/
-test.py
-tserver.py
-tclient.py
+testplace/
