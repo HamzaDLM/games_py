@@ -93,13 +93,13 @@ def get_player_state(player_info: dict):
     player_socket, player_obj = player_info["socket"], player_info["player"]
 
     while game_running:
-        sleep(1)
-        print(GREEN, "-> Getting game state from:", player_obj.name, END, flush=True)
+        sleep(0.01)
+        # print(GREEN, "-> Getting game state from:", player_obj.name, END, flush=True)
 
         try:
             data = player_socket.recv(BUFFERSIZE)
             data = pickle.loads(data)
-            print(data, flush=True)
+            # print(data, flush=True)
             if data == "":
                 print("Received empty payload when getting game state", flush=True)
                 break
@@ -126,14 +126,14 @@ def send_game_state(player_info: dict):
     player_socket, player = player_info["socket"], player_info["player"]
 
     while game_running:
-        sleep(1)
-        print(ORANGE, "-> Sending game state to:", player.name, END, flush=True)
+        sleep(0.01)
+        # print(ORANGE, "-> Sending game state to:", player.name, END, flush=True)
 
         data = [vars(player["player"]) for player in players_store]
         for row in data:
             if "_Sprite__g" in row.keys():
                 row.pop("_Sprite__g")
-        print(data, flush=True)
+        # print(data, flush=True)
         data = pickle.dumps(data)
         player_socket.send(data)
 
@@ -148,6 +148,7 @@ def main() -> None:
     try:
         global server_socket
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind(ADDR)
     except socket.error as err:
         print("Error with socket:", err)

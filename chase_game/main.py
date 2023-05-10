@@ -1,9 +1,9 @@
 """Main script for players"""
 import pickle
 import socket
+import random
 from threading import Thread
 from time import sleep
-import asyncio
 
 import pygame
 
@@ -17,13 +17,16 @@ pygame.init()
 # DECLARING USEFUL CONSTANTS
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-PLAYER_NAME = input("Provide your ingame name: ")
+PLAYER_NAME = (
+    f"Player {random.randint(1000,9999)}"  # input("Provide your ingame name: ")
+)
+
 HOST = "localhost"  # input("Provide the host server IP: ")
 PORT = 9999  # int(input("Provide the host server PORT: "))
 ADDR = (HOST, PORT)
 SCREEN_HEIGHT = 876  # pygame.display.Info().current_h * 0.9
 SCREEN_WIDTH = 1542  # pygame.display.Info().current_w * 0.9
-SPEED = 4
+SPEED = 8
 FPS = 40
 BUFFERSIZE = 1024 * 10
 SPRITE_POSITION = {
@@ -121,48 +124,44 @@ def get_game_state():
     If not, then only update certain things
     """
     while True:
-        sleep(1)
-        print(GREEN, "-> Getting game state from", END, flush=True)
+        sleep(0.01)
+        # print(GREEN, "-> Getting game state from", END, flush=True)
         global players_store
         payload = sock.recv(BUFFERSIZE)
         data = pickle.loads(payload)
-        print("G", data, flush=True)
+        # print("G", data, flush=True)
+
+        l = lambda row: Player(
+            x=row["x"],
+            y=row["y"],
+            name=row["name"],
+            file_name=row["file_name"],
+            alive=row["alive"],
+            has_bomb=row["has_bomb"],
+        )
+
         # If players_store empty, then append players in it
         if not players_store:
-            for row in data:
-                players_store.append(
-                    Player(
-                        x=row["x"],
-                        y=row["y"],
-                        name=row["name"],
-                        file_name=row["file_name"],
-                        alive=row["alive"],
-                        has_bomb=row["has_bomb"],
-                    )
-                )
+            [players_store.append(l(row)) for row in data]
         # If players already added to store, update them all except current player
         else:
             for row in data:
-                for player in players_store:
-                    if row["name"] == player.name and row["name"] != PLAYER_NAME:
-                        player = Player(
-                            x=row["x"],
-                            y=row["y"],
-                            name=row["name"],
-                            file_name=row["file_name"],
-                            alive=row["alive"],
-                            has_bomb=row["has_bomb"],
-                        )
+                for i in range(len(players_store)):
+                    if (
+                        row["name"] == players_store[i].name
+                        and row["name"] != PLAYER_NAME
+                    ):
+                        players_store[i] = l(row)
 
 
 def send_game_state():
     """Send movement data of the current player to server"""
     while True:
-        sleep(1)
-        print(ORANGE, "-> Sending game state to", END, flush=True)
+        sleep(0.01)
+        # print(ORANGE, "-> Sending game state to", END, flush=True)
         for player in players_store:
             if player.name == PLAYER_NAME:
-                print("S", vars(player), flush=True)
+                # print("S", vars(player), flush=True)
                 data = pickle.dumps(vars(player))
                 sock.send(data)
 
@@ -195,7 +194,7 @@ def main():
     """Main game loop function"""
     pprint("STARTED MAIN LOOP")
     tick_counter = pygame.time.get_ticks()
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.music.play(-1)
     alpha = 255
     game_started = False
     running = True
@@ -220,9 +219,11 @@ def main():
         # Display players
         for player in players_store:
             game_display.blit(
-                player.display_player(*SPRITE_POSITION["dead"]), (player.x, player.y)
+                player.display_player(*SPRITE_POSITION["normal"]), (player.x, player.y)
             )
 
+
+        
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -257,7 +258,6 @@ if __name__ == "__main__":
     pprint("START THREADS FOR EXCHANGING DATA WITH SERVER")
     t1 = Thread(target=get_game_state)
     t2 = Thread(target=send_game_state)
-
     t1.start()
     t2.start()
 
