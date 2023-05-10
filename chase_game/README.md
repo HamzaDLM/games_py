@@ -1,14 +1,15 @@
-At the moment working on main.py
+# Multiplayer game
 
-which is the entry for the game
+Multiplayer server done through multithreaded tcp socket connections.
 
-I created some boilerplate code
+![](assets/scrn.png)
 
-and should code the methods for creating and showing players
+### TODO:
 
-and also updating the server with those infos
+- Continue building game logic
 
+### Refs:
 
-## Resources:
-
-- get sprite position: https://getspritexy.netlify.app/
+- Background : https://www.deviantart.com/jacksromart/art/top-down-game-screen-mockup-934897310
+- Characters : http://pixelartmaker.com/art/330200205d28649
+- Music: https://linktr.ee/WMDmusic
