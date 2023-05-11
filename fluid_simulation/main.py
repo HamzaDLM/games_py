@@ -41,15 +41,15 @@ Iterations: {iter}
 info = H3.render("Drag to change velocity/density.", True, WHITE)
 
 # Initialize a fluid instance
-fluid1 = Fluid(dt=0.2, diffussion=0, viscosity=0.0000001)
+fluid1 = Fluid(dt=0.1, diffussion=0, viscosity=0.0000001)
 
 
 def multiline_text(t: str, x: int, y: int, font_size):
-    t = t.strip().split("\n")
+    text = t.strip().split("\n")
     offset = 0
-    for line in t:
-        text = H3.render(line, True, WHITE)
-        canvas.blit(text, (x, y + offset))
+    for line in text:
+        text_srfc = H3.render(line, True, WHITE)
+        canvas.blit(text_srfc, (x, y + offset))
         offset += font_size
 
 
@@ -59,10 +59,9 @@ def render_density(density: list[float]) -> None:
             x = i * SCALE
             y = j * SCALE
             d = density[IX(i, j)]
-            d = int(constrain(d, 0, 255))
-            color = (d, d, d)
-            rect = pygame.Rect(x, y, SCALE, SCALE)
-            pygame.draw.rect(canvas, color, rect)
+            d = constrain(d, 0, 255)
+            color = (int(d), int(d), int(d))
+            pygame.draw.rect(canvas, color, rect=(x, y, SCALE, SCALE))
 
 
 while True:
@@ -88,7 +87,7 @@ while True:
 
     fluid1.step()
     render_density(fluid1.density)
-    fluid1.fade_density(amount=12)
+    fluid1.fade_density(amount=6)
 
     f = f"FPS: {round(clock.get_fps(), 1)}"
     fps_text = H3.render(f, True, WHITE)

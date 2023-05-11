@@ -129,13 +129,6 @@ func advect(b int, d []float64, d0 []float64, velocX []float64, velocY []float64
 
 			d[IX(i, j)] = s0*(t0*d0[IX(i0i, j0i)]+t1*d0[IX(i0i, j1i)]) +
 				s1*(t0*d0[IX(i1i, j0i)]+t1*d0[IX(i1i, j1i)])
-			// s0*
-			// 	(t0*d0[IX(i0i, j0i)]) +
-			// 	(t1 * d0[IX(i0i, j1i)]) +
-			// 	s1*
-			// 		(t0*d0[IX(i1i, j0i)]) +
-			// 	(t1 * d0[IX(i1i, j1i)])
-
 		}
 	}
 	setBnd(b, d)

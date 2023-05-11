@@ -1,10 +1,11 @@
 import math
 from functools import lru_cache
+from typing import ClassVar
 
 
 class Fluid:
-    N: int = 128  # size (how many squares)
-    iterations: int = 5
+    N: ClassVar[int] = 64  # size (how many squares)
+    iterations: ClassVar[int] = 10
 
     def __init__(self, dt: float, diffussion: float, viscosity: float) -> None:
         self.dt = dt
@@ -177,11 +178,8 @@ def advect(
             j0i = int(j0)
             j1i = int(j1)
 
-            d[IX(i, j)] = (
-                s0 * (t0 * d0[IX(i0i, j0i)])
-                + (t1 * d0[IX(i0i, j1i)])
-                + s1 * (t0 * d0[IX(i1i, j0i)])
-                + (t1 * d0[IX(i1i, j1i)])
+            d[IX(i, j)] = s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) + s1 * (
+                t0 * d0[IX(i1i, j0i)] + t1 * d0[IX(i1i, j1i)]
             )
 
     set_bnd(b, d, N)
