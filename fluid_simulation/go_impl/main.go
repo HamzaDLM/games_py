@@ -66,6 +66,7 @@ func main() {
 		}
 		step(f)
 		renderDensity(f)
+		// fadeDensity(f)
 
 		rl.EndDrawing()
 	}

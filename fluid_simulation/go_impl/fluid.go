@@ -55,6 +55,14 @@ func addVelocity(f Fluid, x int, y int, amountX float64, amountY float64) {
 	f.Vy[index] += amountY
 }
 
+func fadeDensity(f Fluid) {
+	for i := 0; i < len(f.density); i++ {
+		if f.density[i] != 0 {
+			f.density[i] -= 2
+		}
+	}
+}
+
 // Fluid functions
 func setBnd(b int, x []float64) {
 	for i := 1; i < N-1; i++ {

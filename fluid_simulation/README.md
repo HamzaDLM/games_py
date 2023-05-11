@@ -1,14 +1,11 @@
-# Fluid simulation - PyGame
+# Fluid simulation - Raylib (Go) / PyGame (Python)
 
 Ported using as reference the paper of **Jos Stam** on **Real-Time Fluid Dynamics for Games**: https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/GDC03.pdf
 
 ![](src1.png)
 
-FPS is looking rough and the animation isn't smooth, the step() function takes huge amounts of time to compute, need to rewrite to Cython.
-
 TODO:
 
-- Re-write fluid.py in Cython inshaalah to enhance performance as the Python implementation is painfully slow.
 - Add better density coloring.
 - Add visual arrows indicating velocity vectors.
 - Enable changing parameters (density, velocity...) on GUI.
