@@ -20,13 +20,13 @@ func renderDensity(f Fluid) {
 			x := int32(i) * scale
 			y := int32(j) * scale
 			d := f.density[IX(i, j)]
-			d_scaled := constrain(d, 0, 255)
-			d_norm := uint8(d_scaled)
-			if d_norm != 0 {
-				fmt.Printf("Density not 0 at: x: %d, y: %d, IX: %d, density: %v \n", x, y, IX(i, j), d)
-			}
+			// d_scaled := constrain(d, 0, 255)
+			// d_norm := uint8(d_scaled)
+			// if d != 0 {
+			// 	fmt.Printf("Density not 0 at: x: %d, y: %d, IX: %d, density: %v \n", x, y, IX(i, j), d)
+			// }
 			// fmt.Println(d_scaled, d_norm)
-			rl.DrawRectangle(x, y, scale, scale, color.RGBA{255, 255, 255, d_norm})
+			rl.DrawRectangle(x, y, scale, scale, color.RGBA{255, 255, 255, uint8(int(d) % 255)})
 		}
 	}
 }
@@ -37,17 +37,16 @@ func main() {
 	fmt.Println(len(f.density))
 
 	// Initialize window
-	rl.InitWindow(screenW, screenH, "raylib [core] example - basic window")
+	rl.InitWindow(screenW, screenH, "Fluid Simulation")
 	defer rl.CloseWindow()
 	// FPS
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(40)
 
 	// Main game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		rl.DrawRectangle(200, 200, scale, scale, rl.White)
 		rl.DrawText("Fluid simulation", screenH/2+40, 20, 30, rl.White)
 
 		fps := strconv.FormatInt(int64(rl.GetFPS()), 10)
@@ -62,10 +61,12 @@ func main() {
 				cx := int(pos.X / float32(scale))
 				cy := int(pos.Y / float32(scale))
 				addDensity(f, cx, cy, 100)
+				addVelocity(f, cx, cy, 1, 1)
 			}
 		}
 		step(f)
 		renderDensity(f)
+
 		rl.EndDrawing()
 	}
 }

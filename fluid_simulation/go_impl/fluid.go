@@ -28,6 +28,7 @@ type Fluid struct {
 }
 
 func step(f Fluid) {
+
 	diffuse(1, f.Vx0, f.Vx, f.visc, f.dt)
 	diffuse(2, f.Vy0, f.Vy, f.visc, f.dt)
 
@@ -40,7 +41,6 @@ func step(f Fluid) {
 
 	diffuse(0, f.s, f.density, f.diff, f.dt)
 	advect(0, f.density, f.s, f.Vx, f.Vy, f.dt)
-
 }
 
 // Fluid methods
@@ -176,23 +176,7 @@ func diffuse(b int, x []float64, x0 []float64, diff float64, dt float64) {
 
 // Helper functions
 func IX(x int, y int) int {
-	x = constrain(x, 0, N-1)
-	y = constrain(x, 0, N-1)
 	return x + y*N
-}
-// FIXME: This is not good
-// Density not 0 at: x: 485, y: 595, IX: 12125, density: 400 
-// Density not 0 at: x: 485, y: 600, IX: 12125, density: 400 
-// Density not 0 at: x: 485, y: 605, IX: 12125, density: 400
-
-func constrain[V int | float64](val V, min V, max V) V {
-	if val > max {
-		return max
-	} else if val < min {
-		return min
-	} else {
-		return val
-	}
 }
 
 // Create an instance of fluid
