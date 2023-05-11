@@ -180,6 +180,10 @@ func IX(x int, y int) int {
 	y = constrain(x, 0, N-1)
 	return x + y*N
 }
+// FIXME: This is not good
+// Density not 0 at: x: 485, y: 595, IX: 12125, density: 400 
+// Density not 0 at: x: 485, y: 600, IX: 12125, density: 400 
+// Density not 0 at: x: 485, y: 605, IX: 12125, density: 400
 
 func constrain[V int | float64](val V, min V, max V) V {
 	if val > max {

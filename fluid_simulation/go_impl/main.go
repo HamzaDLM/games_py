@@ -34,6 +34,7 @@ func renderDensity(f Fluid) {
 func main() {
 	// Initialize fluid
 	f := newFluid(int64(N), 0.1, 0, 0)
+	fmt.Println(len(f.density))
 
 	// Initialize window
 	rl.InitWindow(screenW, screenH, "raylib [core] example - basic window")
