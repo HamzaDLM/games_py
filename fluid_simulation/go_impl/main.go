@@ -26,7 +26,7 @@ func renderDensity(f Fluid) {
 			// 	fmt.Printf("Density not 0 at: x: %d, y: %d, IX: %d, density: %v \n", x, y, IX(i, j), d)
 			// }
 			// fmt.Println(d_scaled, d_norm)
-			rl.DrawRectangle(x, y, scale, scale, color.RGBA{uint8(int(d) % 255), 255, 255, uint8(int(d) % 255)})
+			rl.DrawRectangle(x, y, scale, scale, color.RGBA{255, 255, 255, uint8(int(d) % 255)})
 		}
 	}
 }

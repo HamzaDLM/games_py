@@ -127,7 +127,14 @@ func advect(b int, d []float64, d0 []float64, velocX []float64, velocY []float64
 			j0i := int(j0)
 			j1i := int(j1)
 
-			d[IX(i, j)] = s0*(t0*d0[IX(i0i, j0i)]) + (t1 * d0[IX(i0i, j1i)]) + s1*(t0*d0[IX(i1i, j0i)]) + (t1 * d0[IX(i1i, j1i)])
+			d[IX(i, j)] = s0*(t0*d0[IX(i0i, j0i)]+t1*d0[IX(i0i, j1i)]) +
+				s1*(t0*d0[IX(i1i, j0i)]+t1*d0[IX(i1i, j1i)])
+			// s0*
+			// 	(t0*d0[IX(i0i, j0i)]) +
+			// 	(t1 * d0[IX(i0i, j1i)]) +
+			// 	s1*
+			// 		(t0*d0[IX(i1i, j0i)]) +
+			// 	(t1 * d0[IX(i1i, j1i)])
 
 		}
 	}
@@ -137,7 +144,11 @@ func advect(b int, d []float64, d0 []float64, velocX []float64, velocY []float64
 func project(velocX []float64, velocY []float64, p []float64, div []float64) {
 	for i := 1; i < N-1; i++ {
 		for j := 1; j < N-1; j++ {
-			div[IX(i, j)] = -0.5 * (velocX[IX(i+1, j)] - velocX[IX(i-1, j)] + velocY[IX(i, j+1)] - velocY[IX(i, j-1)]) / float64(N)
+			div[IX(i, j)] = -0.5 * (velocX[IX(i+1, j)] -
+				velocX[IX(i-1, j)] +
+				velocY[IX(i, j+1)] -
+				velocY[IX(i, j-1)]) /
+				float64(N)
 			p[IX(i, j)] = 0
 		}
 	}
@@ -161,7 +172,12 @@ func linSolve(b int, x []float64, x0 []float64, a float64, c float64) {
 	for k := 0; k < iter; k++ {
 		for j := 1; j < N-1; j++ {
 			for i := 1; i < N-1; i++ {
-				x[IX(i, j)] = x0[IX(i, j)] + a*(x[IX(i+1, j)]+x[IX(i-1, j)]+x[IX(i, j+1)]+x[IX(i, j-1)])*cRecip
+				x[IX(i, j)] = x0[IX(i, j)] +
+					a*(x[IX(i+1, j)]+
+						x[IX(i-1, j)]+
+						x[IX(i, j+1)]+
+						x[IX(i, j-1)])*
+						cRecip
 			}
 		}
 		setBnd(b, x)
