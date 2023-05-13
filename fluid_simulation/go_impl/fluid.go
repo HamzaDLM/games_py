@@ -55,11 +55,9 @@ func addVelocity(f Fluid, x int, y int, amountX float64, amountY float64) {
 	f.Vy[index] += amountY
 }
 
-func fadeDensity(f Fluid) {
+func fadeDensity(f Fluid, amount float64) {
 	for i := 0; i < len(f.density); i++ {
-		if f.density[i] != 0 {
-			f.density[i] -= 2
-		}
+		f.density[i] *= amount
 	}
 }
 
@@ -192,7 +190,19 @@ func diffuse(b int, x []float64, x0 []float64, diff float64, dt float64) {
 }
 
 // Helper functions
+func constrain[K comparable, V int | float64](val V, min V, max V) V {
+	if val < min {
+		return min
+	} else if val > max {
+		return max
+	} else {
+		return val
+	}
+}
+
 func IX(x int, y int) int {
+	x = constrain[int](x, 0, N-1)
+	y = constrain[int](y, 0, N-1)
 	return x + y*N
 }
 
