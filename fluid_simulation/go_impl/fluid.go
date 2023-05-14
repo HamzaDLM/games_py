@@ -46,7 +46,9 @@ func step(f Fluid) {
 // Fluid methods
 func addDensity(f Fluid, x int, y int, amount float64) {
 	index := IX(x, y)
-	f.density[index] += amount
+	if f.density[index] < 10000 {
+		f.density[index] += amount
+	}
 }
 
 func addVelocity(f Fluid, x int, y int, amountX float64, amountY float64) {
