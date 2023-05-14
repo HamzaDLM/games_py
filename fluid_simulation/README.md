@@ -2,10 +2,11 @@
 
 Ported using as reference the paper of **Jos Stam** on **Real-Time Fluid Dynamics for Games**: https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/GDC03.pdf
 
-![](sim.webm)
+![](sim.gif)
 
 TODO:
 
+- Fix the noise.
 - Add better density coloring (color temperature).
 - Add visual arrows indicating velocity vectors.
 
