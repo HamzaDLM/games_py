@@ -114,10 +114,10 @@ func main() {
 	// FPS
 	rl.SetTargetFPS(60)
 
-	var ra float32 = 5
-	var zoomOutFactor float32 = 0.9999
-	n := 1000
-	listOfPrimes := findPrimes(n)
+	var circleRadius float32 = 5
+	var zoomOutFactor float32 = 0.999
+	primesSize := 1000
+	listOfPrimes := findPrimes(primesSize)
 	var listOfCoords []cartesian
 	for i := 0; i < len(listOfPrimes); i++ {
 		listOfCoords = append(listOfCoords, polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])}))
@@ -132,15 +132,12 @@ func main() {
 		// Draw the spiral plane
 		drawPolarPlane(16)
 		// Draw the prime points
-		// ra = ra * zoomOutFactor
+		circleRadius = circleRadius * zoomOutFactor
 		for i := 0; i < len(listOfCoords); i++ {
 			listOfCoords[i].X = int32(float32(listOfCoords[i].X) * zoomOutFactor)
 			listOfCoords[i].Y = int32(float32(listOfCoords[i].Y) * zoomOutFactor)
-			if i == 20 {
-				fmt.Println(listOfCoords[i].X, listOfCoords[i].Y)
-			}
-			t := (float64(listOfPrimes[i]) - 2) / (float64(n) - 2)
-			rl.DrawCircle(listOfCoords[i].X, listOfCoords[i].Y, ra,
+			t := (float64(listOfPrimes[i]) - 2) / (float64(primesSize) - 2)
+			rl.DrawCircle(listOfCoords[i].X, listOfCoords[i].Y, circleRadius,
 				lerp_rbga_triple(
 					color.RGBA{255, 0, 0, 255},
 					color.RGBA{255, 0, 255, 255},
