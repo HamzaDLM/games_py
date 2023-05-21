@@ -18,7 +18,7 @@ const (
 )
 
 var white = color.RGBA{255, 255, 255, 255}
-var whitefaded = color.RGBA{255, 255, 255, 80}
+var whitefaded = color.RGBA{255, 255, 255, 30}
 
 type polar struct {
 	Radius float64
@@ -112,37 +112,44 @@ func main() {
 	rl.InitWindow(screenW, screenH, "Primes")
 	defer rl.CloseWindow()
 	// FPS
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(40)
 
-	var circleRadius float32 = 5
-	var zoomOutFactor float32 = 0.999
-	primesSize := 1000
+	var circleRadius float32 = 2
+	var zoomOutFactor float32 = 0.0000001 // percentage
+	var primesSize int = 10000
+	var shiftVal float64 = 0
+	var distanceBetweenPoints float64 = 10
 	listOfPrimes := findPrimes(primesSize)
-	var listOfCoords []cartesian
-	for i := 0; i < len(listOfPrimes); i++ {
-		listOfCoords = append(listOfCoords, polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])}))
-	}
+
 	// Main game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		// rl.DrawText("Primes Spiral", screenW-200, 20, 30, rl.White)
-
 		// Draw the spiral plane
 		drawPolarPlane(16)
 		// Draw the prime points
-		circleRadius = circleRadius * zoomOutFactor
-		for i := 0; i < len(listOfCoords); i++ {
-			listOfCoords[i].X = int32(float32(listOfCoords[i].X) * zoomOutFactor)
-			listOfCoords[i].Y = int32(float32(listOfCoords[i].Y) * zoomOutFactor)
-			t := (float64(listOfPrimes[i]) - 2) / (float64(primesSize) - 2)
-			rl.DrawCircle(listOfCoords[i].X, listOfCoords[i].Y, circleRadius,
-				lerp_rbga_triple(
-					color.RGBA{255, 0, 0, 255},
-					color.RGBA{255, 0, 255, 255},
-					color.RGBA{0, 0, 255, 255}, t))
+		if circleRadius > 2 {
+			circleRadius = circleRadius - circleRadius*zoomOutFactor*1000
 		}
+		for i := 0; i < len(listOfPrimes); i++ {
+			shiftVal = shiftVal + (screenW * float64(zoomOutFactor))
+			Cart := polarToCartesian(
+				polar{
+					// Shift coords to the middle so that they don't merge to top left
+					Radius: (float64(listOfPrimes[i]) - shiftVal) / distanceBetweenPoints,
+					Angle:  float64(listOfPrimes[i])})
+			t := (float64(listOfPrimes[i]) - 2) / (float64(primesSize) - 2)
+			if float64(listOfPrimes[i])-shiftVal > 0 {
+				rl.DrawCircle(Cart.X, Cart.Y, circleRadius,
+					lerp_rbga_triple(
+						color.RGBA{255, 0, 0, 255},
+						color.RGBA{0, 255, 0, 255},
+						color.RGBA{0, 0, 255, 255}, t))
+			}
+		}
+
+		rl.DrawText("Primes Spiral", screenW-230, 20, 30, rl.White)
 
 		// Show FPS
 		fps := strconv.FormatInt(int64(rl.GetFPS()), 10)
