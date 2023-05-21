@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	screenW = 1000
+	screenW = 1600
 	screenH = 1000
 )
 
@@ -28,6 +28,29 @@ type polar struct {
 type cartesian struct {
 	X int32
 	Y int32
+}
+
+func lerp_rbga_triple(color1 color.RGBA, color2 color.RGBA, color3 color.RGBA, t float64) color.RGBA {
+
+	var rgba_a color.RGBA
+	var rgba_b color.RGBA
+	var rgba_c color.RGBA
+
+	rgba_a.R = uint8(float64(color1.R)*(1-t) + float64(color2.R)*t)
+	rgba_a.G = uint8(float64(color1.G)*(1-t) + float64(color2.G)*t)
+	rgba_a.B = uint8(float64(color1.B)*(1-t) + float64(color2.B)*t)
+
+	rgba_b.R = uint8(float64(color2.R)*(1-t) + float64(color3.R)*t)
+	rgba_b.G = uint8(float64(color2.G)*(1-t) + float64(color3.G)*t)
+	rgba_b.B = uint8(float64(color2.B)*(1-t) + float64(color3.B)*t)
+
+	rgba_c.R = uint8(float64(rgba_a.R)*(1-t) + float64(rgba_b.R)*t)
+	rgba_c.G = uint8(float64(rgba_a.G)*(1-t) + float64(rgba_b.G)*t)
+	rgba_c.B = uint8(float64(rgba_a.B)*(1-t) + float64(rgba_b.B)*t)
+
+	rgba_c.A = 255
+
+	return rgba_c
 }
 
 func initializeArray(a []bool, n int) {
@@ -84,7 +107,7 @@ func main() {
 	fmt.Println("Starting Game")
 
 	// Initialize window
-	rl.InitWindow(screenW, screenH, "raylib [core] example - basic window")
+	rl.InitWindow(screenW, screenH, "Primes")
 	defer rl.CloseWindow()
 	// FPS
 	rl.SetTargetFPS(60)
@@ -95,15 +118,17 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
-		rl.DrawText("Primes Spiral", screenH/2+40, 20, 30, rl.White)
+		// rl.DrawText("Primes Spiral", screenW-200, 20, 30, rl.White)
 
 		// Draw the spiral plane
 		drawPolarPlane(10)
-		// Draw the points
-		listOfPrimes := findPrimes(400)
+		// Draw the prime points
+		n := 400
+		listOfPrimes := findPrimes(n)
 		for i := 0; i < len(listOfPrimes); i++ {
 			c := polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])})
-			rl.DrawCircle(c.X, c.Y, 5, white)
+			t := (float64(listOfPrimes[i]) - 2) / (float64(n) - 2)
+			rl.DrawCircle(c.X, c.Y, 5, lerp_rbga_triple(color.RGBA{255, 0, 0, 255}, color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, t))
 		}
 
 		// Show FPS
