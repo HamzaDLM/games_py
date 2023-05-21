@@ -93,14 +93,16 @@ func polarToCartesian(p polar) cartesian {
 }
 
 // Draw a polar coordinate system
-// splits determines the minimum angle between lines to display
-func drawPolarPlane(minRadius int) {
-	rl.DrawCircle(screenW/2, screenH/2, 5, whitefaded)
-	rl.DrawCapsule(rl.Vector3{X: screenW / 2, Y: screenH / 2, Z: 0}, rl.Vector3{X: screenW, Y: screenH, Z: 100}, 50, 10, 10, whitefaded)
-	rl.DrawLine(screenW/2, screenH/2, screenW/2, 0, whitefaded)
-	rl.DrawLine(screenW/2, screenH/2, 0, screenH/2, whitefaded)
-	rl.DrawLine(screenW/2, screenH/2, screenW, screenH/2, whitefaded)
-	rl.DrawLine(screenW/2, screenH/2, screenW/2, screenH, whitefaded)
+// splits determines how many lines to display
+func drawPolarPlane(splits int) {
+	for i := 0; i < screenW; i++ {
+		rl.DrawCircleLines(screenW/2, screenH/2, float32(i)*100, whitefaded)
+	}
+	for i := 0; i < splits; i++ {
+		theta := (3.1415 * 2) / float32(splits)
+		c := polarToCartesian(polar{screenW, float64(theta * float32(i))})
+		rl.DrawLine(screenW/2, screenH/2, c.X, c.Y, whitefaded)
+	}
 }
 
 func main() {
@@ -112,7 +114,14 @@ func main() {
 	// FPS
 	rl.SetTargetFPS(60)
 
-	// fmt.Println(findLastPrimes(20))
+	var ra float32 = 5
+	var zoomOutFactor float32 = 0.99
+	n := 1000
+	listOfPrimes := findPrimes(n)
+	var listOfCoords []cartesian
+	for i := 0; i < len(listOfPrimes); i++ {
+		listOfCoords = append(listOfCoords, polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])}))
+	}
 	// Main game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -121,18 +130,21 @@ func main() {
 		// rl.DrawText("Primes Spiral", screenW-200, 20, 30, rl.White)
 
 		// Draw the spiral plane
-		drawPolarPlane(10)
+		drawPolarPlane(16)
 		// Draw the prime points
-		n := 400
-		listOfPrimes := findPrimes(n)
-		for i := 0; i < len(listOfPrimes); i++ {
-			c := polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])})
+		// ra = ra * zoomOutFactor
+		for i := 0; i < len(listOfCoords); i++ {
+			listOfCoords[i].X = int32(float32(listOfCoords[i].X) * zoomOutFactor)
+			listOfCoords[i].Y = int32(float32(listOfCoords[i].Y) * zoomOutFactor)
+			if i == 20 {
+				fmt.Println(listOfCoords[i].X, listOfCoords[i].Y)
+			}
 			t := (float64(listOfPrimes[i]) - 2) / (float64(n) - 2)
-			rl.DrawCircle(c.X, c.Y, 5,
+			rl.DrawCircle(listOfCoords[i].X, listOfCoords[i].Y, ra,
 				lerp_rbga_triple(
 					color.RGBA{255, 0, 0, 255},
-					color.RGBA{255, 255, 0, 255},
-					color.RGBA{0, 255, 255, 255}, t))
+					color.RGBA{255, 0, 255, 255},
+					color.RGBA{0, 0, 255, 255}, t))
 		}
 
 		// Show FPS
