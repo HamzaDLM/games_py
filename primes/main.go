@@ -1,5 +1,3 @@
-// idea: objects made using fibo sequence represent prime values in spiral
-// one of them suppleis an argument to the other.
 package main
 
 import (
@@ -13,8 +11,8 @@ import (
 )
 
 const (
-	screenW = 1600
-	screenH = 1000
+	screenW = 1200
+	screenH = 800
 )
 
 var white = color.RGBA{255, 255, 255, 255}
@@ -106,26 +104,23 @@ func drawPolarPlane(splits int) {
 }
 
 func main() {
-	fmt.Println("Starting Game")
-
 	// Initialize window
 	rl.InitWindow(screenW, screenH, "Primes")
 	defer rl.CloseWindow()
-	// FPS
+	// set FPS
 	rl.SetTargetFPS(40)
 
 	var circleRadius float32 = 2
-	var zoomOutFactor float32 = 0.0000001 // percentage
-	var primesSize int = 10000
+	var primesSize int = 100000
 	var shiftVal float64 = 0
-	var distanceBetweenPoints float64 = 10
+	var zoomOutFactor float32 = 0.000001   // Represent speed of movement
+	var distanceBetweenPoints float64 = 10 // Represent distance
 	listOfPrimes := findPrimes(primesSize)
 
 	// Main game loop
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
-
 		// Draw the spiral plane
 		drawPolarPlane(16)
 		// Draw the prime points
@@ -148,6 +143,9 @@ func main() {
 						color.RGBA{0, 0, 255, 255}, t))
 			}
 		}
+
+		distanceBetweenPoints = distanceBetweenPoints - float64(rl.GetMouseWheelMove())
+		rl.DrawText("Use mouse wheel to zoom in / out", 440, screenH-40, 20, rl.White)
 
 		rl.DrawText("Primes Spiral", screenW-230, 20, 30, rl.White)
 
