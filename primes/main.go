@@ -128,7 +128,11 @@ func main() {
 		for i := 0; i < len(listOfPrimes); i++ {
 			c := polarToCartesian(polar{Radius: float64(listOfPrimes[i]), Angle: float64(listOfPrimes[i])})
 			t := (float64(listOfPrimes[i]) - 2) / (float64(n) - 2)
-			rl.DrawCircle(c.X, c.Y, 5, lerp_rbga_triple(color.RGBA{255, 0, 0, 255}, color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, t))
+			rl.DrawCircle(c.X, c.Y, 5,
+				lerp_rbga_triple(
+					color.RGBA{255, 0, 0, 255},
+					color.RGBA{255, 255, 0, 255},
+					color.RGBA{0, 255, 255, 255}, t))
 		}
 
 		// Show FPS
