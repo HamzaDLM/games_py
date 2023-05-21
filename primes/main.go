@@ -115,7 +115,7 @@ func main() {
 	rl.SetTargetFPS(60)
 
 	var ra float32 = 5
-	var zoomOutFactor float32 = 0.99
+	var zoomOutFactor float32 = 0.9999
 	n := 1000
 	listOfPrimes := findPrimes(n)
 	var listOfCoords []cartesian
