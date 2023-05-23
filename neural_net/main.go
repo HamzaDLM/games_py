@@ -14,6 +14,7 @@ import (
 const (
 	screenW = 1600
 	screenH = 900
+	size    = 28
 )
 
 type Grid struct {
@@ -23,24 +24,20 @@ type Grid struct {
 	y    int
 }
 
-func makeGrid(g Grid, l [][]uint8) {
+// Get 1 dimensional index for a 2 dimensional array
+func IX(i, j int) int {
+	return j*size + i
+}
+
+func makeGrid(g Grid, l []uint8) {
 	for i := 0; i < g.size; i++ {
 		for j := 0; j < g.size; j++ {
 			cx := int32(g.x + 15 + (i * 15))
 			cy := int32(g.y + 15 + (j * 15))
-			rl.DrawCircle(cx, cy, float32(g.r), color.RGBA{255, 255, 255, l[i][j]})
+			rl.DrawCircle(cx, cy, float32(g.r), color.RGBA{255, 255, 255, l[IX(i, j)]})
 			rl.DrawCircleLines(cx, cy, float32(g.r), color.RGBA{255, 255, 255, 100})
 		}
 	}
-}
-
-// // Input array containing values for color alpha
-func initializeMatrix(size int) [][]uint8 {
-	var inputArr [][]uint8
-	for i := 0; i < size; i++ {
-		inputArr = append(inputArr, make([]uint8, size))
-	}
-	return inputArr
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
@@ -77,24 +74,8 @@ func parseTrain(filename string) map[uint8][]uint8 {
 	return data
 }
 
-// Turn a 1 dimension array to a 2 dimensions array
-func map1Dto2D(l1 []uint8, l2 [][]uint8) [][]uint8 {
-	for i := 0; i < len(l2); i++ {
-		for j := 0; j < len(l2[i]); j++ {
-			index := j*len(l2) + i
-			l2[i][j] = l1[index]
-		}
-	}
-	return l2
-}
-
-func matrixDot() {
-
-}
 
 func main() {
-	fmt.Println("Neural Network")
-
 	// Import training set
 	// trainList := parseTrain("train.csv")
 
@@ -104,10 +85,9 @@ func main() {
 	// set FPS
 	rl.SetTargetFPS(60)
 
-	gridInfo := Grid{size: 28, r: 5, x: 100, y: 200}
-	gridArray := initializeMatrix(gridInfo.size)
-	// gridArray = map1Dto2D(trainList[6], gridArray)
-	// Main game loop
+	gridInfo := Grid{size: size, r: 5, x: 100, y: 200}
+	gridArray := make([]uint8, size*size)
+
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
@@ -122,7 +102,7 @@ func main() {
 					cy := int32(gridInfo.y + 15 + (j * 15))
 					if int32(pos.X) > cx-int32(gridInfo.r)-4 && int32(pos.X) <= cx+int32(gridInfo.r)-4 &&
 						int32(pos.Y) > cy-int32(gridInfo.r)+4 && int32(pos.Y) <= cy+int32(gridInfo.r)+4 {
-						gridArray[i][j] = 255
+						gridArray[IX(i, j)] = 255
 					}
 				}
 			}
@@ -135,7 +115,7 @@ func main() {
 		if rl.IsMouseButtonDown(0) && pos.X > 225 && pos.X < 375 && pos.Y > 650 && pos.Y < 680 {
 			rl.DrawRectangleLines(225, 650, 150, 30, rl.White)
 			rl.DrawText("Clear Grid", 255, 655, 18, rl.White)
-			gridArray = initializeMatrix(gridInfo.size)
+			gridArray = make([]uint8, size*size)
 		} else {
 			rl.DrawRectangle(225, 650, 150, 30, rl.Gray)
 			rl.DrawText("Clear Grid", 255, 655, 18, rl.Black)
