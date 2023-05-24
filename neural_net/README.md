@@ -8,13 +8,13 @@ This neural network does the simple task of predicting the value of a written di
 
 A perceptron is an artificial neuron that takes some inputs $x_1, x_2, x_3$ and procudes a single binary output. It uses weights $w_1, w_2, w_3$ to detemine which input matters more in predicting the output. Thus the output will related to whether the sum $\sum_j w_j x_j$ is bigger than a threshold.
 
-![](1.png)
+![](data/1.png)
 
 ### Network of perceptrons
 
 Generall, a perceptron won't be able to do much, so to accomplish a task such as predicting hand-written numbers we need a network of perceptrons that is basically layers of perceptrons put in front of each other. The layers between the inputs and the output are called hidden layers. An example of a two hidden layered network looks like the following:
 
-![](2.png)
+![](data/2.png)
 
 ### Bias
 
@@ -63,6 +63,6 @@ b_l  \rightarrow  b_l' = b_l-\frac{\eta}{m}
 \sum_j \frac{\partial C_{X_j}}{\partial b_l},
 $$
 
-Refs:
+#### Refs:
 
 Training/Test data used: https://www.kaggle.com/competitions/digit-recognizer/data
