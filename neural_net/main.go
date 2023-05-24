@@ -76,24 +76,21 @@ func parseTrain(filename string) map[uint8][]uint8 {
 func main() {
 	// Create the neural net
 	nn := NeuralNetwork{
-		inputNeuronsSize:        size * size,
+		inputNeuronsSize:        10,
 		outputNeuronsSize:       10,
 		hiddenLayers:            2,
 		hiddenLayersNeuronsSize: []int{16, 16}, // Should contain hiddenLayers number of values
-		weights:                 make([]uint8, size),
-		biases:                  make([]uint8, size),
+		weights:                 make([][]float64, size),
+		biases:                  make([][]float64, size),
 		epochs:                  1000,
 		learningRate:            0.3,
 	}
 
 	// Import training set
-	trainInputs, trainLabels := parseTrain("data/train.csv")
-
-
+	// trainInputs, trainLabels := parseTrain("data/train.csv")
 
 	// Start the training
 	nnLearn(&nn)
-
 
 	// // Initialize window
 	// rl.InitWindow(screenW, screenH, "Neural Network Visualization")

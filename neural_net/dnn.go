@@ -12,8 +12,8 @@ type NeuralNetwork struct {
 	outputNeuronsSize       int
 	hiddenLayers            int
 	hiddenLayersNeuronsSize []int
-	weights                 []uint8
-	biases                  []uint8
+	weights                 [][]float64
+	biases                  [][]float64
 	epochs                  int
 	learningRate            float64
 }
@@ -26,21 +26,44 @@ func nnLearn(nn *NeuralNetwork) {
 		panic(fmt.Sprintf("The hidden layers neuron size array should contain %v elements.", nn.hiddenLayers))
 	}
 
-	// Initialize biases and weights
+	// Create a random generator
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	biases := make([]uint8, size)
-	weights := make([]uint8, size)
-	for i := 0; i < int(size); i++ {
-		biases[i] = uint8(random.Float64())
-		weights[i] = uint8(random.Float64())
+
+	// Initialize biases and weights arrays
+	weights := make([][]float64, nn.hiddenLayers+1)
+	biases := make([][]float64, nn.hiddenLayers+1)
+	// Prealocate w, b space for l1
+	weights[0] = make([]float64, nn.inputNeuronsSize*nn.hiddenLayersNeuronsSize[0])
+	biases[0] = make([]float64, nn.hiddenLayersNeuronsSize[0])
+	// Prealocate w, b space for output
+	weights[nn.hiddenLayers] = make([]float64, nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1]*nn.outputNeuronsSize)
+	biases[nn.hiddenLayers] = make([]float64, nn.outputNeuronsSize)
+	// Preaclocate for every layer in between
+	if nn.hiddenLayers > 1 {
+		for i := 1; i < nn.hiddenLayers; i++ {
+			weights[i] = make([]float64, nn.hiddenLayersNeuronsSize[i-1]*nn.hiddenLayersNeuronsSize[i])
+			biases[i] = make([]float64, nn.hiddenLayersNeuronsSize[i])
+		}
 	}
 
-	for i := 0; i < nn.epochs; i++ {
+	for i := 0; i < len(weights); i++ {
+		for j := 0; j < len(weights[i]); j++ {
+			weights[i][j] = random.Float64()
+		}
+	}
+	for i := 0; i < len(biases); i++ {
+		for j := 0; j < len(biases[i]); j++ {
+			biases[i][j] = rand.Float64()
+		}
+	}
 
+	// Backpropagation technique
+	for i := 0; i < nn.epochs; i++ {
+		
 	}
 }
 
-func fastForward() {}
+func feedForward() {}
 
 func stochasticGradientDescent() {}
 
@@ -80,12 +103,6 @@ func (R *Matrix) matrixMult(A, B *Matrix) {
 		panic("The matrices aren't multipliable.")
 	}
 
-	// result := Matrix{
-	// 	data:    make([]float64, int(A.rowSize*B.colSize)),
-	// 	rowSize: A.rowSize,
-	// 	colSize: B.colSize,
-	// }
-
 	for i := 0; i < int(A.rowSize); i++ {
 		for j := 0; j < int(B.colSize); j++ {
 			var sum float64 = 0
@@ -103,12 +120,6 @@ func (R *Matrix) matrixAdd(A, B *Matrix) {
 	if A.colSize != B.colSize || A.rowSize != B.rowSize {
 		panic("The matrices can't be additioned.")
 	}
-
-	// result := Matrix{
-	// 	data:    make([]float64, int(A.colSize*A.colSize)),
-	// 	rowSize: A.rowSize,
-	// 	colSize: A.colSize,
-	// }
 
 	for i := 0; i < int(A.rowSize); i++ {
 		for j := 0; j < int(A.colSize); j++ {
