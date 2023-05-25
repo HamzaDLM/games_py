@@ -66,13 +66,36 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 
 	// // Backpropagation technique
 	for i := 0; i < nn.epochs; i++ {
-		// feedforward
+		// feedforward TODO: make it dynamic (accepting any range of hidden layers)
+		fmt.Println("Input")
+		fmt.Println(x.data[0:10])
 
+		fmt.Println("Layer 1")
+		// Z1
 		layerL1 := createMatrix(nn.weights[0].rowSize, x.colSize)
 		layerL1.matrixMult(&nn.weights[0], x)
 		layerL1.matrixAddArray(&layerL1, &nn.biases[0])
+		// A1
 		activationL1 := applyToMatrix(sigmoid, layerL1)
 		fmt.Println(activationL1.data[0:10])
+
+		fmt.Println("Layer 2")
+		// Z2
+		layerL2 := createMatrix(nn.weights[1].rowSize, x.colSize)
+		layerL2.matrixMult(&nn.weights[1], &layerL1)
+		layerL2.matrixAddArray(&layerL2, &nn.biases[1])
+		// A2
+		activationL2 := applyToMatrix(sigmoid, layerL2)
+		fmt.Println(activationL2.data[0:10])
+
+		fmt.Println("Output")
+		// Z3
+		layerL3 := createMatrix(nn.weights[2].rowSize, x.colSize)
+		layerL3.matrixMult(&nn.weights[2], &layerL2)
+		layerL3.matrixAddArray(&layerL3, &nn.biases[2])
+		// A3
+		activationL3 := applyToMatrix(sigmoid, layerL3)
+		fmt.Println(activationL3.data[0:10])
 
 		// backpropagate
 
