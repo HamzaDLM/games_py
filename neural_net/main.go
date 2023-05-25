@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"image/color"
 	"os"
 	"strconv"
@@ -40,46 +41,46 @@ func makeGrid(g Grid, l []uint8) {
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
-func parseTrain(filename string) map[uint8][]uint8 {
+func parseTrain(filename string) ([]float64, []float64) {
 	file, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	data := make(map[uint8][]uint8, 0)
+	dataInputs := make([]float64, 0)
+	dataLabels := make([]float64, 0)
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		row := scanner.Text()
 		s := strings.Split(row, ",")
-		// sublist holding pixel values
-		var lints []uint8
-		// Parse string to uint and add to sublist
-		for i := 1; i < len(s); i++ {
-			d, err := strconv.ParseUint(s[i], 10, 64)
+		for i := 0; i < len(s); i++ {
+			d, err := strconv.ParseFloat(s[i], 64)
 			if err == nil {
-				lints = append(lints, uint8(d))
+				if i == 0 {
+					dataLabels = append(dataLabels, d/255)
+				} else {
+					dataInputs = append(dataInputs, d/255)
+				}
+
 			}
-		}
-		key, err := strconv.ParseUint(s[0], 10, 64)
-		if err == nil {
-			data[uint8(key)] = lints
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
-	return data
+	return dataInputs, dataLabels
 }
 
 func main() {
 	// Create the neural net
 	nn := NeuralNetwork{
-		inputNeuronsSize:        10,
+		inputNeuronsSize:        size * size,
 		outputNeuronsSize:       10,
 		hiddenLayers:            2,
-		hiddenLayersNeuronsSize: []int{16, 16}, // Should contain hiddenLayers number of values
+		hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
 		weights:                 make([][]float64, size),
 		biases:                  make([][]float64, size),
 		epochs:                  1000,
@@ -87,10 +88,10 @@ func main() {
 	}
 
 	// Import training set
-	// trainInputs, trainLabels := parseTrain("data/train.csv")
-
+	trainInputs, trainLabels := parseTrain("data/train.csv")
 	// Start the training
-	nnLearn(&nn)
+	fmt.Println("Starting the learning process")
+	nnLearn(&nn, trainInputs, trainLabels)
 
 	// // Initialize window
 	// rl.InitWindow(screenW, screenH, "Neural Network Visualization")

@@ -19,7 +19,7 @@ type NeuralNetwork struct {
 }
 
 // Main training function
-func nnLearn(nn *NeuralNetwork) {
+func nnLearn(nn *NeuralNetwork, x, y []float64) {
 
 	// Check parameters
 	if len(nn.hiddenLayersNeuronsSize) != nn.hiddenLayers {
@@ -30,37 +30,75 @@ func nnLearn(nn *NeuralNetwork) {
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Initialize biases and weights arrays
-	weights := make([][]float64, nn.hiddenLayers+1)
-	biases := make([][]float64, nn.hiddenLayers+1)
+	weights := make([]Matrix, nn.hiddenLayers+1)
+	biases := make([]Matrix, nn.hiddenLayers+1)
 	// Prealocate w, b space for l1
-	weights[0] = make([]float64, nn.inputNeuronsSize*nn.hiddenLayersNeuronsSize[0])
-	biases[0] = make([]float64, nn.hiddenLayersNeuronsSize[0])
+	weights[0] = Matrix{
+		data:    make([]float64, nn.inputNeuronsSize*nn.hiddenLayersNeuronsSize[0]),
+		rowSize: nn.hiddenLayersNeuronsSize[0],
+		colSize: nn.inputNeuronsSize,
+	}
+	biases[0] = Matrix{
+		data:    make([]float64, nn.hiddenLayersNeuronsSize[0]),
+		rowSize: nn.hiddenLayersNeuronsSize[0],
+		colSize: 1,
+	}
 	// Prealocate w, b space for output
-	weights[nn.hiddenLayers] = make([]float64, nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1]*nn.outputNeuronsSize)
-	biases[nn.hiddenLayers] = make([]float64, nn.outputNeuronsSize)
+	weights[nn.hiddenLayers] = Matrix{
+		data:    make([]float64, nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1]*nn.outputNeuronsSize),
+		rowSize: nn.outputNeuronsSize,
+		colSize: nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1],
+	}
+	biases[nn.hiddenLayers] = Matrix{
+		data:    make([]float64, nn.outputNeuronsSize),
+		rowSize: nn.outputNeuronsSize,
+		colSize: 1,
+	}
 	// Preaclocate for every layer in between
 	if nn.hiddenLayers > 1 {
 		for i := 1; i < nn.hiddenLayers; i++ {
-			weights[i] = make([]float64, nn.hiddenLayersNeuronsSize[i-1]*nn.hiddenLayersNeuronsSize[i])
-			biases[i] = make([]float64, nn.hiddenLayersNeuronsSize[i])
+			weights[i] = Matrix{
+				data:    make([]float64, nn.hiddenLayersNeuronsSize[i-1]*nn.hiddenLayersNeuronsSize[i]),
+				rowSize: nn.hiddenLayersNeuronsSize[i],
+				colSize: nn.hiddenLayersNeuronsSize[i-1],
+			}
+			biases[i] = Matrix{
+				data:    make([]float64, nn.hiddenLayersNeuronsSize[i]),
+				rowSize: nn.hiddenLayersNeuronsSize[i],
+				colSize: 1,
+			}
 		}
 	}
-
+	// Fill weights and biases with random floats
 	for i := 0; i < len(weights); i++ {
-		for j := 0; j < len(weights[i]); j++ {
-			weights[i][j] = random.Float64()
+		for j := 0; j < len(weights[i].data); j++ {
+			weights[i].data[j] = random.Float64()
 		}
 	}
 	for i := 0; i < len(biases); i++ {
-		for j := 0; j < len(biases[i]); j++ {
-			biases[i][j] = rand.Float64()
+		for j := 0; j < len(biases[i].data); j++ {
+			biases[i].data[j] = rand.Float64()
 		}
 	}
 
-	// Backpropagation technique
-	for i := 0; i < nn.epochs; i++ {
-		
+	// TODO: remove after / Verifying dimensions
+	for i := 0; i < 3; i++ {
+		fmt.Println("Weights", i, weights[i].dims())
+		fmt.Println("Biases", i, biases[i].dims())
+		fmt.Println("-------------------")
 	}
+
+	// // Backpropagation technique
+	// for i := 0; i < nn.epochs; i++ {
+	// 	// feedforward
+
+	// 	// activationL1 := Matrix{
+	// 	// 	data: make([]float64, )
+	// 	// }
+
+	// 	// backpropagate
+
+	// }
 }
 
 func feedForward() {}
@@ -79,8 +117,13 @@ func costDerivative() {}
 
 type Matrix struct {
 	data    []float64
-	rowSize float64
-	colSize float64
+	rowSize int // How many rows
+	colSize int // How many cols
+}
+
+// Returns Matrix dimensions in better formatted way
+func (m Matrix) dims() string {
+	return fmt.Sprintf("Matrix of size: %d X %d", m.rowSize, m.colSize)
 }
 
 // Prints a matrix in a 2D shape
@@ -96,34 +139,34 @@ func printMatrix(m Matrix) {
 
 }
 
-// Perform multiplication on two matrices.
+// Perform multiplication on two matrices of 1D form.
 // Panics if n of cols in A doesn't equal n of rows in B.
 func (R *Matrix) matrixMult(A, B *Matrix) {
 	if A.colSize != B.rowSize {
 		panic("The matrices aren't multipliable.")
 	}
 
-	for i := 0; i < int(A.rowSize); i++ {
-		for j := 0; j < int(B.colSize); j++ {
+	for i := 0; i < A.rowSize; i++ {
+		for j := 0; j < B.colSize; j++ {
 			var sum float64 = 0
-			for k := 0; k < int(A.colSize); k++ {
-				sum += A.data[i*int(A.colSize)+k] * B.data[k*int(B.colSize)+j]
+			for k := 0; k < A.colSize; k++ {
+				sum += A.data[i*A.colSize+k] * B.data[k*B.colSize+j]
 			}
-			R.data[i*int(B.colSize)+j] = sum
+			R.data[i*B.colSize+j] = sum
 		}
 	}
 }
 
-// Perform Addition on two matrices.
+// Perform Addition on two matrices of 1D form.
 // Panics if dimensions are incorrect (dim A != dim B)
 func (R *Matrix) matrixAdd(A, B *Matrix) {
 	if A.colSize != B.colSize || A.rowSize != B.rowSize {
 		panic("The matrices can't be additioned.")
 	}
 
-	for i := 0; i < int(A.rowSize); i++ {
-		for j := 0; j < int(A.colSize); j++ {
-			R.data[i*int(A.colSize)+j] = A.data[i*int(A.colSize)+j] + B.data[i*int(A.colSize)+j]
+	for i := 0; i < A.rowSize; i++ {
+		for j := 0; j < A.colSize; j++ {
+			R.data[i*A.colSize+j] = A.data[i*A.colSize+j] + B.data[i*A.colSize+j]
 		}
 	}
 }
