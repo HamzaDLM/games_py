@@ -99,12 +99,11 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		}
 		layerL1.matrixMult(&nn.weights[0], x)
 		layerL1.matrixAddArray(&layerL1, &nn.biases[0])
-		activationL1 := layerL1
-		activationL1.applyToMatrix(sigmoid)
-		fmt.Println(layerL1.data[0:10])
-		fmt.Println(activationL1.data[0:10])
+		activationL1 := applyToMatrix(sigmoid, layerL1)
+
 		// backpropagate
 
+		
 		fmt.Println("Iteration:", i)
 	}
 }
@@ -147,10 +146,17 @@ func printMatrix(m Matrix) {
 
 }
 
-func (R *Matrix) applyToMatrix(f func(float64) float64) {
-	for i := 0; i < len(R.data); i++ {
-		R.data[i] = f(R.data[i])
+// Apply a function to matrix and return a copy of it
+func applyToMatrix(f func(float64) float64, m Matrix) Matrix {
+	r := Matrix{
+		data:    make([]float64, len(m.data)),
+		rowSize: m.rowSize,
+		colSize: m.colSize,
 	}
+	for i := 0; i < len(r.data); i++ {
+		r.data[i] = f(m.data[i])
+	}
+	return r
 }
 
 // Perform multiplication on two matrices of 1D form.
