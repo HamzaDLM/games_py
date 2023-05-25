@@ -33,40 +33,16 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 	nn.weights = make([]Matrix, nn.hiddenLayers+1)
 	nn.biases = make([]Matrix, nn.hiddenLayers+1)
 	// Prealocate w, b space for l1
-	nn.weights[0] = Matrix{
-		data:    make([]float64, nn.inputNeuronsSize*nn.hiddenLayersNeuronsSize[0]),
-		rowSize: nn.hiddenLayersNeuronsSize[0],
-		colSize: nn.inputNeuronsSize,
-	}
-	nn.biases[0] = Matrix{
-		data:    make([]float64, nn.hiddenLayersNeuronsSize[0]),
-		rowSize: nn.hiddenLayersNeuronsSize[0],
-		colSize: 1,
-	}
+	nn.weights[0] = createMatrix(nn.hiddenLayersNeuronsSize[0], nn.inputNeuronsSize)
+	nn.biases[0] = createMatrix(nn.hiddenLayersNeuronsSize[0], 1)
 	// Prealocate w, b space for output
-	nn.weights[nn.hiddenLayers] = Matrix{
-		data:    make([]float64, nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1]*nn.outputNeuronsSize),
-		rowSize: nn.outputNeuronsSize,
-		colSize: nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1],
-	}
-	nn.biases[nn.hiddenLayers] = Matrix{
-		data:    make([]float64, nn.outputNeuronsSize),
-		rowSize: nn.outputNeuronsSize,
-		colSize: 1,
-	}
+	nn.weights[nn.hiddenLayers] = createMatrix(nn.outputNeuronsSize, nn.hiddenLayersNeuronsSize[len(nn.hiddenLayersNeuronsSize)-1])
+	nn.biases[nn.hiddenLayers] = createMatrix(nn.outputNeuronsSize, 1)
 	// Preaclocate for every layer in between
 	if nn.hiddenLayers > 1 {
 		for i := 1; i < nn.hiddenLayers; i++ {
-			nn.weights[i] = Matrix{
-				data:    make([]float64, nn.hiddenLayersNeuronsSize[i-1]*nn.hiddenLayersNeuronsSize[i]),
-				rowSize: nn.hiddenLayersNeuronsSize[i],
-				colSize: nn.hiddenLayersNeuronsSize[i-1],
-			}
-			nn.biases[i] = Matrix{
-				data:    make([]float64, nn.hiddenLayersNeuronsSize[i]),
-				rowSize: nn.hiddenLayersNeuronsSize[i],
-				colSize: 1,
-			}
+			nn.weights[i] = createMatrix(nn.hiddenLayersNeuronsSize[i], nn.hiddenLayersNeuronsSize[i-1])
+			nn.biases[i] = createMatrix(nn.hiddenLayersNeuronsSize[i], 1)
 		}
 	}
 	// Fill weights and biases with random floats
@@ -92,18 +68,14 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 	for i := 0; i < nn.epochs; i++ {
 		// feedforward
 
-		layerL1 := Matrix{
-			data:    make([]float64, nn.weights[0].rowSize*x.colSize),
-			rowSize: nn.weights[0].rowSize,
-			colSize: x.colSize,
-		}
+		layerL1 := createMatrix(nn.weights[0].rowSize, x.colSize)
 		layerL1.matrixMult(&nn.weights[0], x)
 		layerL1.matrixAddArray(&layerL1, &nn.biases[0])
 		activationL1 := applyToMatrix(sigmoid, layerL1)
+		fmt.Println(activationL1.data[0:10])
 
 		// backpropagate
 
-		
 		fmt.Println("Iteration:", i)
 	}
 }
@@ -128,6 +100,16 @@ type Matrix struct {
 	colSize int // How many cols
 }
 
+// Initialize a matrix and return it
+func createMatrix(r int, c int) Matrix {
+	return Matrix{
+		data:    make([]float64, r*c),
+		rowSize: r,
+		colSize: c,
+	}
+
+}
+
 // Returns Matrix dimensions in better formatted way
 func (m Matrix) dims() string {
 	return fmt.Sprintf("Matrix of size: %d X %d", m.rowSize, m.colSize)
@@ -148,11 +130,7 @@ func printMatrix(m Matrix) {
 
 // Apply a function to matrix and return a copy of it
 func applyToMatrix(f func(float64) float64, m Matrix) Matrix {
-	r := Matrix{
-		data:    make([]float64, len(m.data)),
-		rowSize: m.rowSize,
-		colSize: m.colSize,
-	}
+	r := createMatrix(m.rowSize, m.colSize)
 	for i := 0; i < len(r.data); i++ {
 		r.data[i] = f(m.data[i])
 	}
