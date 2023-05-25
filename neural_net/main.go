@@ -41,27 +41,37 @@ func makeGrid(g Grid, l []uint8) {
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
-func parseTrain(filename string) ([]float64, []float64) {
+func parseTrain(filename string) (Matrix, Matrix) {
 	file, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	dataInputs := make([]float64, 0)
-	dataLabels := make([]float64, 0)
+	dataInputs := Matrix{
+		data:    make([]float64, 0),
+		rowSize: 784,
+		colSize: -1,
+	}
+	dataLabels := Matrix{
+		data:    make([]float64, 0),
+		rowSize: 0,
+		colSize: 1,
+	}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		row := scanner.Text()
 		s := strings.Split(row, ",")
+		dataInputs.colSize += 1
 		for i := 0; i < len(s); i++ {
 			d, err := strconv.ParseFloat(s[i], 64)
 			if err == nil {
 				if i == 0 {
-					dataLabels = append(dataLabels, d/255)
+					dataLabels.data = append(dataLabels.data, d/255)
+					dataLabels.rowSize += 1
 				} else {
-					dataInputs = append(dataInputs, d/255)
+					dataInputs.data = append(dataInputs.data, d/255)
 				}
 
 			}
@@ -81,17 +91,19 @@ func main() {
 		outputNeuronsSize:       10,
 		hiddenLayers:            2,
 		hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
-		weights:                 make([][]float64, size),
-		biases:                  make([][]float64, size),
+		weights:                 make([]Matrix, size),
+		biases:                  make([]Matrix, size),
 		epochs:                  1000,
 		learningRate:            0.3,
 	}
 
 	// Import training set
 	trainInputs, trainLabels := parseTrain("data/train.csv")
+	fmt.Println(trainInputs.dims())
+	fmt.Println(trainLabels.dims())
 	// Start the training
 	fmt.Println("Starting the learning process")
-	nnLearn(&nn, trainInputs, trainLabels)
+	nnLearn(&nn, &trainInputs, &trainLabels)
 
 	// // Initialize window
 	// rl.InitWindow(screenW, screenH, "Neural Network Visualization")
