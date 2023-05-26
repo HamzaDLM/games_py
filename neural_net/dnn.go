@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+var Reset = "\033[0m"
+var Red = "\033[31m"
+var Green = "\033[32m"
+var Yellow = "\033[33m"
+var Blue = "\033[34m"
+
 type NeuralNetwork struct {
 	inputNeuronsSize        int
 	outputNeuronsSize       int
@@ -64,9 +70,9 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		fmt.Println("-------------------")
 	}
 
-	// // Backpropagation technique
+	// GD technique
 	for i := 0; i < nn.epochs; i++ {
-		// feedforward TODO: make it dynamic (accepting any range of hidden layers)
+		// Feedforward TODO: make it dynamic (accepting any range of hidden layers)
 		fmt.Println("Input")
 		fmt.Println(x.data[0:10])
 
@@ -95,12 +101,88 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		layerL3.matrixAddArray(&layerL3, &nn.biases[2])
 		// A3
 		activationL3 := applyToMatrix(sigmoid, layerL3)
+		fmt.Println("ACTIVATION OUTPUT")
 		fmt.Println(activationL3.data[0:10])
 
-		// backpropagate
+		// Predict
+		y_hat := getPredict(&activationL3)
+		fmt.Println(Blue, "Prediction", Reset)
+		fmt.Println("correct", y.data[0:10])
+		fmt.Println("predicted", y_hat.data[0:10])
+
+		// Accuracy
+		accuracy := getAccuracy(*y, y_hat)
+		fmt.Println("Accuracy:", accuracy)
+
+		// Loss
+		fmt.Println(Blue, "Y vs onehot(Y)", Reset)
+		printMatrix(transpose(y))
+		one_hot_y := one_hot(transpose(y))
+		printMatrix(one_hot_y)
+		// loss := crossEntropy(one_hot(y), &activationL3)
+		// fmt.Println("Loss:", loss)
+
+		// Backpropagate
+		// gradients := backPropagate(&activationL3, &y)
 
 		fmt.Println("Iteration:", i)
+		return
 	}
+}
+
+// Transpose a matrix of n x m dimensions to m x n
+func transpose(m *Matrix) Matrix {
+	t := createMatrix(m.colSize, m.rowSize)
+	t.data = m.data
+	return t
+}
+
+func backPropagate(activations Matrix) {}
+
+// Convert Matrix of shape n x 1 to one-hot-binary
+func one_hot(m Matrix) Matrix {
+	one_hot := createMatrix(m.rowSize*10, m.colSize)
+	for c := 0; c < 10; c++ {
+		for r := 0; r < 10; r++ {
+			if int(m.data[c]) == r {
+				one_hot.data[r*one_hot.colSize+c] = 1
+			}
+		}
+	}
+	return one_hot
+}
+
+func crossEntropy(y_one_hot Matrix, y_hat *Matrix) float64 {
+
+	return 0.0
+}
+
+func getAccuracy(correct Matrix, predicted Matrix) float64 {
+	if len(correct.data) != len(predicted.data) {
+		panic("Can't get accuracy, sizes are different.")
+	}
+	var count float64 = 0
+	for i := 0; i < len(correct.data); i++ {
+		if correct.data[i] == predicted.data[i] {
+			count += 1
+		}
+	}
+	return count / float64(len(correct.data))
+}
+
+// Predict result with size 1 x m
+func getPredict(m *Matrix) Matrix {
+	r := createMatrix(1, m.colSize)
+	for c := 0; c < m.colSize; c++ {
+		max := 0 // max is the first row value in col i
+		for r := 0; r < m.rowSize; r++ {
+			if m.data[IX(r, c)] > m.data[IX(max, c)] {
+				max = r
+			}
+		}
+		r.data[c] = float64(max)
+	}
+	return r
 }
 
 func feedForward() {}
@@ -108,8 +190,6 @@ func feedForward() {}
 func stochasticGradientDescent() {}
 
 func updateMiniBatch() {}
-
-func backPropagate() {}
 
 func evaluate() {}
 
@@ -133,6 +213,11 @@ func createMatrix(r int, c int) Matrix {
 
 }
 
+// Get 1 dimensional index for a 2 dimensional array
+func IX(row, col int) int {
+	return row*size + col
+}
+
 // Returns Matrix dimensions in better formatted way
 func (m Matrix) dims() string {
 	return fmt.Sprintf("Matrix of size: %d X %d", m.rowSize, m.colSize)
@@ -140,14 +225,19 @@ func (m Matrix) dims() string {
 
 // Prints a matrix in a 2D shape
 func printMatrix(m Matrix) {
-	fmt.Print("Matrix ------ rows ", m.rowSize, "x", m.colSize, " cols\n")
-	for i := 0; i < int(m.rowSize); i++ {
-		for j := 0; j < int(m.colSize); j++ {
-			fmt.Print(m.data[i*int(m.colSize)+j], " ")
+	limit := 10
+	fmt.Print(Red, "Matrix ------ rows ", m.rowSize, "x", m.colSize, " cols\n", Reset)
+	for r := 0; r < int(m.rowSize); r++ {
+		for c := 0; c < int(m.colSize); c++ {
+			if r < limit && c < limit {
+				fmt.Print(m.data[r*int(m.colSize)+c], " ")
+			}
 		}
-		fmt.Print("\n")
+		if r < limit {
+			fmt.Print("\n")
+		}
 	}
-	fmt.Println("---------------------------")
+	fmt.Println(Red, "---------------------------", Reset)
 
 }
 

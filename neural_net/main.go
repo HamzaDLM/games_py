@@ -24,11 +24,6 @@ type Grid struct {
 	y    int
 }
 
-// Get 1 dimensional index for a 2 dimensional array
-func IX(i, j int) int {
-	return j*size + i
-}
-
 func makeGrid(g Grid, l []uint8) {
 	for i := 0; i < g.size; i++ {
 		for j := 0; j < g.size; j++ {
@@ -68,7 +63,7 @@ func parseTrain(filename string) (Matrix, Matrix) {
 			d, err := strconv.ParseFloat(s[i], 64)
 			if err == nil {
 				if i == 0 {
-					dataLabels.data = append(dataLabels.data, d/255)
+					dataLabels.data = append(dataLabels.data, d)
 					dataLabels.rowSize += 1
 				} else {
 					dataInputs.data = append(dataInputs.data, d/255)

@@ -1,6 +1,7 @@
 # Deep Neural Network from scratch
 
-This neural network does the simple task of predicting the value of a written digit.
+This deep neural network does the simple task of predicting the value of a written digit.
+Written from scratch with no third library.
 
 ## Going over the basics
 
