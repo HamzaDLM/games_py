@@ -128,11 +128,49 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		// Backpropagate
 		fmt.Println(Yellow, "BACKPROPAGATE", Reset)
 
+		var m float64 = float64(1.0 / float64(one_hot_y.colSize))
+
+		fmt.Println(Green, "Output", Reset)
 		derivativeL3 := createMatrix(activationL3.rowSize, activationL3.colSize)
 		derivativeL3.matrixSub(&activationL3, &one_hot_y)
 
-		// gradW3 := createMatrix(derivativeL3.rowSize, transpose(&activationL2).colSize)
-		// gradW3.
+		activationL2Transposed := transpose(&activationL2)
+		gradW3 := createMatrix(derivativeL3.rowSize, activationL2Transposed.colSize)
+		gradW3.matrixDot(&derivativeL3, &activationL2Transposed)
+		gradW3.matrixMultScalar(m)
+
+		gradB3 := m * matrixSum(&derivativeL3)
+		fmt.Println(gradB3)
+
+		fmt.Println(Green, "Layer 2", Reset)
+		derivativeL2 := createMatrix(activationL2.rowSize, activationL2.colSize)
+		weights2Transpose := transpose(&nn.weights[2])
+		derivativeL2.matrixDot(&weights2Transpose, &derivativeL3)
+		derivativeL2 = applyToMatrix(sigmoidPrime, activationL2)
+
+		activationL1Transposed := transpose(&activationL1)
+		gradW2 := createMatrix(derivativeL2.rowSize, activationL1Transposed.colSize)
+		gradW2.matrixDot(&derivativeL2, &activationL1Transposed)
+		gradW2.matrixMultScalar(m)
+
+		gradB2 := m * matrixSum(&derivativeL2)
+		fmt.Println(gradB2)
+
+		fmt.Println(Green, "Layer 1", Reset)
+		derivativeL1 := createMatrix(activationL1.rowSize, activationL1.colSize)
+		weights1Transpose := transpose(&nn.weights[1])
+		derivativeL1.matrixDot(&weights1Transpose, &derivativeL2)
+		derivativeL1 = applyToMatrix(sigmoidPrime, activationL1)
+
+		activationL0Transposed := transpose(x)
+		gradW1 := createMatrix(derivativeL1.rowSize, activationL0Transposed.colSize)
+		gradW1.matrixDot(&derivativeL1, &activationL0Transposed)
+		gradW1.matrixMultScalar(m)
+
+		gradB1 := m * matrixSum(&derivativeL1)
+		fmt.Println(gradB1)
+
+		fmt.Println(Yellow, "ADJUST PARAMETERS", Reset)
 
 		fmt.Println(Green, "Iteration:", i, Reset)
 		return
@@ -259,7 +297,16 @@ func applyToMatrix(f func(float64) float64, m Matrix) Matrix {
 	return r
 }
 
-// Perform dot product on two matrices of 1D form.
+// Sum elements of a matrix (np.Sum)
+func matrixSum(m *Matrix) float64 {
+	var sum float64 = 0
+	for i := 0; i < len(m.data); i++ {
+		sum += m.data[i]
+	}
+	return sum
+}
+
+// Perform dot product on two matrices of 1D form (np.Dot).
 // Panics if n of cols in A doesn't equal n of rows in B.
 func (R *Matrix) matrixDot(A, B *Matrix) {
 	if A.colSize != B.rowSize {
@@ -293,10 +340,10 @@ func (R *Matrix) matrixAdd(A, B *Matrix) {
 }
 
 // Perform multiplication on matrix by a scalar
-func (R *Matrix) matrixMultScalar(A *Matrix, s float64) {
-	for i := 0; i < A.rowSize; i++ {
-		for j := 0; j < A.colSize; j++ {
-			R.data[i*A.colSize+j] = A.data[i*A.colSize+j] * s
+func (R *Matrix) matrixMultScalar(s float64) {
+	for i := 0; i < R.rowSize; i++ {
+		for j := 0; j < R.colSize; j++ {
+			R.data[i*R.colSize+j] = R.data[i*R.colSize+j] * s
 		}
 	}
 }

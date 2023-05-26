@@ -96,10 +96,14 @@ func main() {
 	trainInputs, trainLabels := parseTrain("data/train.csv")
 	fmt.Println(trainInputs.dims())
 	fmt.Println(trainLabels.dims())
-
 	// Start the training
 	fmt.Println("Starting the learning process")
 	nnLearn(&nn, &trainInputs, &trainLabels)
+
+	// m1 := createMatrix(3, 4)
+	// m1.data = []float64{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0}
+	// m1.matrixMultScalar(2)
+	// printMatrix(m1)
 
 	// // Initialize window
 	// rl.InitWindow(screenW, screenH, "Neural Network Visualization")

@@ -67,6 +67,7 @@ $$
 TODOs
 
 - Write tests for Matrice operations
+- Document code
 
 #### Refs:
 
