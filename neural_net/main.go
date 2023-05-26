@@ -96,6 +96,7 @@ func main() {
 	trainInputs, trainLabels := parseTrain("data/train.csv")
 	fmt.Println(trainInputs.dims())
 	fmt.Println(trainLabels.dims())
+
 	// Start the training
 	fmt.Println("Starting the learning process")
 	nnLearn(&nn, &trainInputs, &trainLabels)

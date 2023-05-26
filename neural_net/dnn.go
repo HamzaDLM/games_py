@@ -1,3 +1,4 @@
+// FIXME might be conflicting dot product with multiplication of matrices.
 package main
 
 import (
@@ -63,7 +64,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		}
 	}
 
-	// TODO: remove after / Verifying dimensions
+	// TODO remove after / Verifying dimensions
 	for i := 0; i < 3; i++ {
 		fmt.Println("Weights", i, nn.weights[i].dims())
 		fmt.Println("Biases", i, nn.biases[i].dims())
@@ -72,14 +73,16 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 
 	// GD technique
 	for i := 0; i < nn.epochs; i++ {
-		// Feedforward TODO: make it dynamic (accepting any range of hidden layers)
+		// Feedforward
+		// TODO make it dynamic (accepting any range of hidden layers)
+		fmt.Println(Yellow, "FeedForward", Reset)
 		fmt.Println("Input")
 		fmt.Println(x.data[0:10])
 
 		fmt.Println("Layer 1")
 		// Z1
 		layerL1 := createMatrix(nn.weights[0].rowSize, x.colSize)
-		layerL1.matrixMult(&nn.weights[0], x)
+		layerL1.matrixDot(&nn.weights[0], x)
 		layerL1.matrixAddArray(&layerL1, &nn.biases[0])
 		// A1
 		activationL1 := applyToMatrix(sigmoid, layerL1)
@@ -88,7 +91,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		fmt.Println("Layer 2")
 		// Z2
 		layerL2 := createMatrix(nn.weights[1].rowSize, x.colSize)
-		layerL2.matrixMult(&nn.weights[1], &layerL1)
+		layerL2.matrixDot(&nn.weights[1], &layerL1)
 		layerL2.matrixAddArray(&layerL2, &nn.biases[1])
 		// A2
 		activationL2 := applyToMatrix(sigmoid, layerL2)
@@ -97,38 +100,46 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		fmt.Println("Output")
 		// Z3
 		layerL3 := createMatrix(nn.weights[2].rowSize, x.colSize)
-		layerL3.matrixMult(&nn.weights[2], &layerL2)
+		layerL3.matrixDot(&nn.weights[2], &layerL2)
 		layerL3.matrixAddArray(&layerL3, &nn.biases[2])
 		// A3
 		activationL3 := applyToMatrix(sigmoid, layerL3)
-		fmt.Println("ACTIVATION OUTPUT")
 		fmt.Println(activationL3.data[0:10])
 
 		// Predict
+		fmt.Println(Yellow, "PREDICT", Reset)
 		y_hat := getPredict(&activationL3)
-		fmt.Println(Blue, "Prediction", Reset)
 		fmt.Println("correct", y.data[0:10])
 		fmt.Println("predicted", y_hat.data[0:10])
 
 		// Accuracy
+		fmt.Println(Yellow, "ACCURACY", Reset)
 		accuracy := getAccuracy(*y, y_hat)
-		fmt.Println("Accuracy:", accuracy)
+		fmt.Println(accuracy)
 
 		// Loss
-		fmt.Println(Blue, "Y vs onehot(Y)", Reset)
-		printMatrix(transpose(y))
+		// TODO compute loss
+		fmt.Println(Yellow, "LOSS / Y vs onehot(Y)", Reset)
 		one_hot_y := one_hot(transpose(y))
-		printMatrix(one_hot_y)
+		fmt.Println(y.dims(), one_hot_y.dims())
 		// loss := crossEntropy(one_hot(y), &activationL3)
 		// fmt.Println("Loss:", loss)
 
 		// Backpropagate
-		// gradients := backPropagate(&activationL3, &y)
+		fmt.Println(Yellow, "BACKPROPAGATE", Reset)
 
-		fmt.Println("Iteration:", i)
+		derivativeL3 := createMatrix(activationL3.rowSize, activationL3.colSize)
+		derivativeL3.matrixSub(&activationL3, &one_hot_y)
+
+		// gradW3 := createMatrix(derivativeL3.rowSize, transpose(&activationL2).colSize)
+		// gradW3.
+
+		fmt.Println(Green, "Iteration:", i, Reset)
 		return
 	}
 }
+
+func backPropagate(activations Matrix) {}
 
 // Transpose a matrix of n x m dimensions to m x n
 func transpose(m *Matrix) Matrix {
@@ -136,8 +147,6 @@ func transpose(m *Matrix) Matrix {
 	t.data = m.data
 	return t
 }
-
-func backPropagate(activations Matrix) {}
 
 // Convert Matrix of shape n x 1 to one-hot-binary
 func one_hot(m Matrix) Matrix {
@@ -250,9 +259,9 @@ func applyToMatrix(f func(float64) float64, m Matrix) Matrix {
 	return r
 }
 
-// Perform multiplication on two matrices of 1D form.
+// Perform dot product on two matrices of 1D form.
 // Panics if n of cols in A doesn't equal n of rows in B.
-func (R *Matrix) matrixMult(A, B *Matrix) {
+func (R *Matrix) matrixDot(A, B *Matrix) {
 	if A.colSize != B.rowSize {
 		panic("The matrices aren't multipliable.")
 	}
@@ -283,6 +292,29 @@ func (R *Matrix) matrixAdd(A, B *Matrix) {
 	}
 }
 
+// Perform multiplication on matrix by a scalar
+func (R *Matrix) matrixMultScalar(A *Matrix, s float64) {
+	for i := 0; i < A.rowSize; i++ {
+		for j := 0; j < A.colSize; j++ {
+			R.data[i*A.colSize+j] = A.data[i*A.colSize+j] * s
+		}
+	}
+}
+
+// Perform Substraction on two matrices of 1D form.
+// Panics if dimensions are incorrect (dim A != dim B)
+func (R *Matrix) matrixSub(A, B *Matrix) {
+	if A.colSize != B.colSize || A.rowSize != B.rowSize {
+		panic("The matrices can't be additioned.")
+	}
+
+	for i := 0; i < A.rowSize; i++ {
+		for j := 0; j < A.colSize; j++ {
+			R.data[i*A.colSize+j] = A.data[i*A.colSize+j] - B.data[i*A.colSize+j]
+		}
+	}
+}
+
 func (R *Matrix) matrixAddArray(A, B *Matrix) {
 	if A.rowSize != B.rowSize {
 		panic("Can't add the array to this matrix.")
@@ -295,12 +327,12 @@ func (R *Matrix) matrixAddArray(A, B *Matrix) {
 	}
 }
 
-// Activation function
+// Sigmoid activation function
 func sigmoid(z float64) float64 {
 	return 1.0 / (1.0 + math.Exp(-z))
 }
 
-// Derivative of sigmoid function
+// Derivative of sigmoid activation function
 func sigmoidPrime(z float64) float64 {
 	return sigmoid(z) * (1.0 - sigmoid(z))
 }

@@ -64,6 +64,10 @@ b_l  \rightarrow  b_l' = b_l-\frac{\eta}{m}
 \sum_j \frac{\partial C_{X_j}}{\partial b_l},
 $$
 
+TODOs
+
+- Write tests for Matrice operations
+
 #### Refs:
 
 Training/Test data used: https://www.kaggle.com/competitions/digit-recognizer/data
