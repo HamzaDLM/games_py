@@ -89,7 +89,7 @@ func main() {
 		weights:                 make([]Matrix, size),
 		biases:                  make([]Matrix, size),
 		epochs:                  1000,
-		learningRate:            0.3,
+		learningRate:            0.1,
 	}
 
 	// Import training set

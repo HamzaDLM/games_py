@@ -132,12 +132,12 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 
 		fmt.Println(Green, "Output", Reset)
 		derivativeL3 := createMatrix(activationL3.rowSize, activationL3.colSize)
-		derivativeL3.matrixSub(&activationL3, &one_hot_y)
+		derivativeL3.matrixSub(activationL3, one_hot_y)
 
 		activationL2Transposed := transpose(&activationL2)
 		gradW3 := createMatrix(derivativeL3.rowSize, activationL2Transposed.colSize)
 		gradW3.matrixDot(&derivativeL3, &activationL2Transposed)
-		gradW3.matrixMultScalar(m)
+		gradW3 = matrixMultScalar(&gradW3, m)
 
 		gradB3 := m * matrixSum(&derivativeL3)
 		fmt.Println(gradB3)
@@ -151,7 +151,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		activationL1Transposed := transpose(&activationL1)
 		gradW2 := createMatrix(derivativeL2.rowSize, activationL1Transposed.colSize)
 		gradW2.matrixDot(&derivativeL2, &activationL1Transposed)
-		gradW2.matrixMultScalar(m)
+		gradW2 = matrixMultScalar(&gradW2, m)
 
 		gradB2 := m * matrixSum(&derivativeL2)
 		fmt.Println(gradB2)
@@ -165,15 +165,22 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		activationL0Transposed := transpose(x)
 		gradW1 := createMatrix(derivativeL1.rowSize, activationL0Transposed.colSize)
 		gradW1.matrixDot(&derivativeL1, &activationL0Transposed)
-		gradW1.matrixMultScalar(m)
+		gradW1 = matrixMultScalar(&gradW1, m)
 
 		gradB1 := m * matrixSum(&derivativeL1)
 		fmt.Println(gradB1)
 
 		fmt.Println(Yellow, "ADJUST PARAMETERS", Reset)
+		nn.weights[0].matrixSub(nn.weights[0], matrixMultScalar(&gradW1, nn.learningRate))
+		nn.biases[0] = matrixSubScalar(&nn.biases[0], gradB1*nn.learningRate)
 
-		fmt.Println(Green, "Iteration:", i, Reset)
-		return
+		nn.weights[1].matrixSub(nn.weights[1], matrixMultScalar(&gradW2, nn.learningRate))
+		nn.biases[1] = matrixSubScalar(&nn.biases[1], gradB2*nn.learningRate)
+
+		nn.weights[2].matrixSub(nn.weights[2], matrixMultScalar(&gradW3, nn.learningRate))
+		nn.biases[2] = matrixSubScalar(&nn.biases[2], gradB3*nn.learningRate)
+
+		fmt.Println(Green, "Accuracy at Iteration:", i, "is", accuracy, Reset)
 	}
 }
 
@@ -339,20 +346,33 @@ func (R *Matrix) matrixAdd(A, B *Matrix) {
 	}
 }
 
+// Perform substraction on matrix by a scalar
+func matrixSubScalar(m *Matrix, s float64) Matrix {
+	R := createMatrix(m.rowSize, m.colSize)
+	for i := 0; i < R.rowSize; i++ {
+		for j := 0; j < R.colSize; j++ {
+			R.data[i*R.colSize+j] = R.data[i*R.colSize+j] - s
+		}
+	}
+	return R
+}
+
 // Perform multiplication on matrix by a scalar
-func (R *Matrix) matrixMultScalar(s float64) {
+func matrixMultScalar(m *Matrix, s float64) Matrix {
+	R := createMatrix(m.rowSize, m.colSize)
 	for i := 0; i < R.rowSize; i++ {
 		for j := 0; j < R.colSize; j++ {
 			R.data[i*R.colSize+j] = R.data[i*R.colSize+j] * s
 		}
 	}
+	return R
 }
 
 // Perform Substraction on two matrices of 1D form.
 // Panics if dimensions are incorrect (dim A != dim B)
-func (R *Matrix) matrixSub(A, B *Matrix) {
+func (R *Matrix) matrixSub(A, B Matrix) {
 	if A.colSize != B.colSize || A.rowSize != B.rowSize {
-		panic("The matrices can't be additioned.")
+		panic("The matrices can't be substracted.")
 	}
 
 	for i := 0; i < A.rowSize; i++ {
