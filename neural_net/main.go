@@ -35,6 +35,10 @@ func makeGrid(g Grid, l []uint8) {
 	}
 }
 
+func drawNeuralNetwork() {
+	rl.DrawCircle(0, 0, 10, color.RGBA{255, 255, 255, 255})
+}
+
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
 func parseTrain(filename string) (Matrix, Matrix) {
 	file, err := os.Open(filename)
@@ -133,6 +137,8 @@ func main() {
 				}
 			}
 		}
+
+		drawNeuralNetwork()
 
 		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
 		makeGrid(gridInfo, gridArray)
