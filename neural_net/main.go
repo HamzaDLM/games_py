@@ -39,23 +39,45 @@ func makeGrid(g Grid, l []uint8) {
 // x, y are the drawing starting position
 // config list contains number of nodes in each layer
 func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
-	// TOOD remove after, visual aid
-	d := radius * 2
-	rl.DrawRectangleLines(int32(x), int32(y), int32(w), int32(h), rl.White)
-	for i := 0; i < len(config); i++ {
-		wPerLayer := w / len(config)
-		for j := 0; j < h/d; j++ {
-			rl.DrawRectangleLines(int32(x+wPerLayer*i), int32(y+(j*d)), int32(wPerLayer), int32(d), rl.Red)
-			rl.DrawCircleLines(int32(x+wPerLayer*i)+int32(wPerLayer)/2, int32(y+(j*d))+int32(radius), float32(radius), color.RGBA{255, 255, 255, 255})
-
+	// Connect nodes
+	for layer := 0; layer < len(config)-1; layer++ {
+		currentLayerNeurons := config[layer]
+		if currentLayerNeurons > 20 {
+			currentLayerNeurons = 10
 		}
-		rl.DrawRectangleLines(int32(x+wPerLayer*i), int32(y), int32(wPerLayer), int32(h), rl.White)
-	}
+		nextLayerNeurons := config[layer+1]
 
-	// nLayers := len(config)
-	cx := 0 + int32(radius)
-	cy := 0 + int32(radius)
-	rl.DrawCircleLines(cx, cy, float32(radius), color.RGBA{255, 255, 255, 255})
+		for currentNeuron := 0; currentNeuron < currentLayerNeurons; currentNeuron++ {
+			for nextNeuron := 0; nextNeuron < nextLayerNeurons; nextNeuron++ {
+				currentX := int32((w/(len(config)+1))*(layer+1)) + int32(x)
+				nextX := int32((w/(len(config)+1))*(layer+2)) + int32(x)
+
+				currentY := int32((h-(int(currentLayerNeurons)*50))/2) + int32(y)
+				nextY := int32((h-(int(nextLayerNeurons)*50))/2) + int32(y)
+
+				rl.DrawLineEx(
+					rl.Vector2{X: float32(currentX), Y: float32(currentY + (int32(currentNeuron) * 50))},
+					rl.Vector2{X: float32(nextX), Y: float32(nextY + (int32(nextNeuron) * 50))},
+					1,
+					rl.White)
+			}
+		}
+	}
+	// Display nodes
+	for layer := 0; layer < len(config); layer++ {
+		layerNeurons := config[layer]
+		if layerNeurons > 20 {
+			layerNeurons = 10
+		}
+
+		y := int32((h-(int(layerNeurons)*50))/2) + int32(y)
+
+		for neuron := 0; neuron < layerNeurons; neuron++ {
+			x := int32((w/(len(config)+1))*(layer+1)) + int32(x)
+
+			rl.DrawCircle(x, y+(int32(neuron)*50), float32(radius), rl.Blue)
+		}
+	}
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
@@ -104,29 +126,24 @@ func parseTrain(filename string) (Matrix, Matrix) {
 
 func main() {
 	// Create the neural net
-	// nn := NeuralNetwork{
-	// 	inputNeuronsSize:        size * size,
-	// 	outputNeuronsSize:       10,
-	// 	hiddenLayers:            2,
-	// 	hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
-	// 	weights:                 make([]Matrix, size),
-	// 	biases:                  make([]Matrix, size),
-	// 	epochs:                  1000,
-	// 	learningRate:            0.1,
-	// }
+	nn := NeuralNetwork{
+		inputNeuronsSize:        size * size,
+		outputNeuronsSize:       10,
+		hiddenLayers:            2,
+		hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
+		weights:                 make([]Matrix, size),
+		biases:                  make([]Matrix, size),
+		epochs:                  1000,
+		learningRate:            0.1,
+	}
 
 	// Import training set
-	// trainInputs, trainLabels := parseTrain("data/train.csv")
-	// fmt.Println(trainInputs.dims())
-	// fmt.Println(trainLabels.dims())
+	trainInputs, trainLabels := parseTrain("data/train.csv")
+	fmt.Println(trainInputs.dims())
+	fmt.Println(trainLabels.dims())
 	// Start the training
 	fmt.Println("Starting the learning process")
-	// go nnLearn(&nn, &trainInputs, &trainLabels)
-
-	// m1 := createMatrix(3, 4)
-	// m1.data = []float64{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0}
-	// m1.matrixMultScalar(2)
-	// printMatrix(m1)
+	go nnLearn(&nn, &trainInputs, &trainLabels)
 
 	// Initialize window
 	rl.InitWindow(screenW, screenH, "Neural Network Visualization")
@@ -157,9 +174,9 @@ func main() {
 			}
 		}
 
-		drawNeuralNetwork(600, 150, 800, 600, 10, []int{700, 16, 16, 10})
+		drawNeuralNetwork(600, 150, 1000, 600, 10, []int{700, 16, 16, 10})
 
-		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
+		rl.DrawText("Drag to write a number", 190, 170, 10, rl.White)
 		makeGrid(gridInfo, gridArray)
 		// Grid clear button
 		// TODO make the values into variables

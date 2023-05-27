@@ -1,7 +1,8 @@
-# Deep Neural Network from scratch
+# Deep Neural Network from scratch (Visualized)
 
 This deep neural network does the simple task of predicting the value of a written digit.
-Written from scratch with no third library.
+
+Written from scratch with no third library (except for raylib for visuals).
 
 ## Going over the basics
 
