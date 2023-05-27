@@ -39,11 +39,23 @@ func makeGrid(g Grid, l []uint8) {
 // x, y are the drawing starting position
 // config list contains number of nodes in each layer
 func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
-	rl.DrawGrid(20, 10)
+	// TOOD remove after, visual aid
+	d := radius * 2
+	rl.DrawRectangleLines(int32(x), int32(y), int32(w), int32(h), rl.White)
+	for i := 0; i < len(config); i++ {
+		wPerLayer := w / len(config)
+		for j := 0; j < h/d; j++ {
+			rl.DrawRectangleLines(int32(x+wPerLayer*i), int32(y+(j*d)), int32(wPerLayer), int32(d), rl.Red)
+			rl.DrawCircleLines(int32(x+wPerLayer*i)+int32(wPerLayer)/2, int32(y+(j*d))+int32(radius), float32(radius), color.RGBA{255, 255, 255, 255})
+
+		}
+		rl.DrawRectangleLines(int32(x+wPerLayer*i), int32(y), int32(wPerLayer), int32(h), rl.White)
+	}
+
 	// nLayers := len(config)
 	cx := 0 + int32(radius)
 	cy := 0 + int32(radius)
-	rl.DrawCircle(cx, cy, float32(radius), color.RGBA{255, 255, 255, 255})
+	rl.DrawCircleLines(cx, cy, float32(radius), color.RGBA{255, 255, 255, 255})
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
@@ -92,24 +104,24 @@ func parseTrain(filename string) (Matrix, Matrix) {
 
 func main() {
 	// Create the neural net
-	nn := NeuralNetwork{
-		inputNeuronsSize:        size * size,
-		outputNeuronsSize:       10,
-		hiddenLayers:            2,
-		hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
-		weights:                 make([]Matrix, size),
-		biases:                  make([]Matrix, size),
-		epochs:                  1000,
-		learningRate:            0.1,
-	}
+	// nn := NeuralNetwork{
+	// 	inputNeuronsSize:        size * size,
+	// 	outputNeuronsSize:       10,
+	// 	hiddenLayers:            2,
+	// 	hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
+	// 	weights:                 make([]Matrix, size),
+	// 	biases:                  make([]Matrix, size),
+	// 	epochs:                  1000,
+	// 	learningRate:            0.1,
+	// }
 
 	// Import training set
-	trainInputs, trainLabels := parseTrain("data/train.csv")
+	// trainInputs, trainLabels := parseTrain("data/train.csv")
 	// fmt.Println(trainInputs.dims())
 	// fmt.Println(trainLabels.dims())
 	// Start the training
 	fmt.Println("Starting the learning process")
-	go nnLearn(&nn, &trainInputs, &trainLabels)
+	// go nnLearn(&nn, &trainInputs, &trainLabels)
 
 	// m1 := createMatrix(3, 4)
 	// m1.data = []float64{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -145,7 +157,7 @@ func main() {
 			}
 		}
 
-		drawNeuralNetwork(500, 300, 500, 500, 10, []int{700, 16, 16, 10})
+		drawNeuralNetwork(600, 150, 800, 600, 10, []int{700, 16, 16, 10})
 
 		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
 		makeGrid(gridInfo, gridArray)
