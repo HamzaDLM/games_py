@@ -52,6 +52,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 			nn.biases[i] = createMatrix(nn.hiddenLayersNeuronsSize[i], 1)
 		}
 	}
+
 	// Fill weights and biases with random floats
 	for i := 0; i < len(nn.weights); i++ {
 		for j := 0; j < len(nn.weights[i].data); j++ {
@@ -64,40 +65,26 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		}
 	}
 
-	// TODO remove after / Verifying dimensions
-	for i := 0; i < 3; i++ {
-		fmt.Println("Weights", i, nn.weights[i].dims())
-		fmt.Println("Biases", i, nn.biases[i].dims())
-		fmt.Println("-------------------")
-	}
-
 	// GD technique
 	for i := 0; i < nn.epochs; i++ {
 		// Feedforward
 		// TODO make it dynamic (accepting any range of hidden layers)
 		fmt.Println(Yellow, "FeedForward", Reset)
-		fmt.Println("Input")
-		fmt.Println(x.data[0:10])
 
-		fmt.Println("Layer 1")
 		// Z1
 		layerL1 := createMatrix(nn.weights[0].rowSize, x.colSize)
 		layerL1.matrixDot(&nn.weights[0], x)
 		layerL1.matrixAddArray(&layerL1, &nn.biases[0])
 		// A1
 		activationL1 := applyToMatrix(sigmoid, layerL1)
-		fmt.Println(activationL1.data[0:10])
 
-		fmt.Println("Layer 2")
 		// Z2
 		layerL2 := createMatrix(nn.weights[1].rowSize, x.colSize)
 		layerL2.matrixDot(&nn.weights[1], &layerL1)
 		layerL2.matrixAddArray(&layerL2, &nn.biases[1])
 		// A2
 		activationL2 := applyToMatrix(sigmoid, layerL2)
-		fmt.Println(activationL2.data[0:10])
 
-		fmt.Println("Output")
 		// Z3
 		layerL3 := createMatrix(nn.weights[2].rowSize, x.colSize)
 		layerL3.matrixDot(&nn.weights[2], &layerL2)
@@ -115,13 +102,11 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		// Accuracy
 		fmt.Println(Yellow, "ACCURACY", Reset)
 		accuracy := getAccuracy(*y, y_hat)
-		fmt.Println(accuracy)
 
 		// Loss
 		// TODO compute loss
 		fmt.Println(Yellow, "LOSS / Y vs onehot(Y)", Reset)
 		one_hot_y := one_hot(transpose(y))
-		fmt.Println(y.dims(), one_hot_y.dims())
 		// loss := crossEntropy(one_hot(y), &activationL3)
 		// fmt.Println("Loss:", loss)
 
@@ -130,7 +115,6 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 
 		var m float64 = float64(1.0 / float64(one_hot_y.colSize))
 
-		fmt.Println(Green, "Output", Reset)
 		derivativeL3 := createMatrix(activationL3.rowSize, activationL3.colSize)
 		derivativeL3.matrixSub(activationL3, one_hot_y)
 
@@ -140,9 +124,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		gradW3 = matrixMultScalar(&gradW3, m)
 
 		gradB3 := m * matrixSum(&derivativeL3)
-		fmt.Println(gradB3)
 
-		fmt.Println(Green, "Layer 2", Reset)
 		derivativeL2 := createMatrix(activationL2.rowSize, activationL2.colSize)
 		weights2Transpose := transpose(&nn.weights[2])
 		derivativeL2.matrixDot(&weights2Transpose, &derivativeL3)
@@ -154,9 +136,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		gradW2 = matrixMultScalar(&gradW2, m)
 
 		gradB2 := m * matrixSum(&derivativeL2)
-		fmt.Println(gradB2)
 
-		fmt.Println(Green, "Layer 1", Reset)
 		derivativeL1 := createMatrix(activationL1.rowSize, activationL1.colSize)
 		weights1Transpose := transpose(&nn.weights[1])
 		derivativeL1.matrixDot(&weights1Transpose, &derivativeL2)
@@ -168,9 +148,8 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		gradW1 = matrixMultScalar(&gradW1, m)
 
 		gradB1 := m * matrixSum(&derivativeL1)
-		fmt.Println(gradB1)
 
-		fmt.Println(Yellow, "ADJUST PARAMETERS", Reset)
+		fmt.Println(Yellow, "UPDATE PARAMETERS", Reset)
 		nn.weights[0].matrixSub(nn.weights[0], matrixMultScalar(&gradW1, nn.learningRate))
 		nn.biases[0] = matrixSubScalar(&nn.biases[0], gradB1*nn.learningRate)
 
@@ -238,16 +217,6 @@ func getPredict(m *Matrix) Matrix {
 	}
 	return r
 }
-
-func feedForward() {}
-
-func stochasticGradientDescent() {}
-
-func updateMiniBatch() {}
-
-func evaluate() {}
-
-func costDerivative() {}
 
 // ======= Helper functions
 

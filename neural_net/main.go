@@ -94,67 +94,67 @@ func main() {
 
 	// Import training set
 	trainInputs, trainLabels := parseTrain("data/train.csv")
-	fmt.Println(trainInputs.dims())
-	fmt.Println(trainLabels.dims())
+	// fmt.Println(trainInputs.dims())
+	// fmt.Println(trainLabels.dims())
 	// Start the training
 	fmt.Println("Starting the learning process")
-	nnLearn(&nn, &trainInputs, &trainLabels)
+	go nnLearn(&nn, &trainInputs, &trainLabels)
 
 	// m1 := createMatrix(3, 4)
 	// m1.data = []float64{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0}
 	// m1.matrixMultScalar(2)
 	// printMatrix(m1)
 
-	// // Initialize window
-	// rl.InitWindow(screenW, screenH, "Neural Network Visualization")
-	// defer rl.CloseWindow()
-	// // set FPS
-	// rl.SetTargetFPS(60)
+	// Initialize window
+	rl.InitWindow(screenW, screenH, "Neural Network Visualization")
+	defer rl.CloseWindow()
+	// set FPS
+	rl.SetTargetFPS(60)
 
-	// gridInfo := Grid{size: size, r: 5, x: 100, y: 200}
-	// gridArray := make([]uint8, size*size)
+	gridInfo := Grid{size: size, r: 5, x: 100, y: 200}
+	gridArray := make([]uint8, size*size)
 
-	// for !rl.WindowShouldClose() {
-	// 	rl.BeginDrawing()
-	// 	rl.ClearBackground(rl.Black)
-	// 	pos := rl.GetMousePosition()
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.Black)
+		pos := rl.GetMousePosition()
 
-	// 	// User to draw a number on the grid
-	// 	if rl.IsMouseButtonDown(0) {
-	// 		// Add the side fades of each click (near cells of the clicked cell should be greyish)
-	// 		for i := 0; i < gridInfo.size; i++ {
-	// 			for j := 0; j < gridInfo.size; j++ {
-	// 				cx := int32(gridInfo.x + 15 + (i * 15))
-	// 				cy := int32(gridInfo.y + 15 + (j * 15))
-	// 				if int32(pos.X) > cx-int32(gridInfo.r)-4 && int32(pos.X) <= cx+int32(gridInfo.r)-4 &&
-	// 					int32(pos.Y) > cy-int32(gridInfo.r)+4 && int32(pos.Y) <= cy+int32(gridInfo.r)+4 {
-	// 					gridArray[IX(i, j)] = 255
-	// 				}
-	// 			}
-	// 		}
-	// 	}
+		// User to draw a number on the grid
+		if rl.IsMouseButtonDown(0) {
+			// Add the side fades of each click (near cells of the clicked cell should be greyish)
+			for i := 0; i < gridInfo.size; i++ {
+				for j := 0; j < gridInfo.size; j++ {
+					cx := int32(gridInfo.x + 15 + (i * 15))
+					cy := int32(gridInfo.y + 15 + (j * 15))
+					if int32(pos.X) > cx-int32(gridInfo.r)-4 && int32(pos.X) <= cx+int32(gridInfo.r)-4 &&
+						int32(pos.Y) > cy-int32(gridInfo.r)+4 && int32(pos.Y) <= cy+int32(gridInfo.r)+4 {
+						gridArray[IX(i, j)] = 255
+					}
+				}
+			}
+		}
 
-	// 	rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
-	// 	makeGrid(gridInfo, gridArray)
-	// 	// Grid clear button
-	// 	// TODO make the values into variables
-	// 	if rl.IsMouseButtonDown(0) && pos.X > 225 && pos.X < 375 && pos.Y > 650 && pos.Y < 680 {
-	// 		rl.DrawRectangleLines(225, 650, 150, 30, rl.White)
-	// 		rl.DrawText("Clear Grid", 255, 655, 18, rl.White)
-	// 		gridArray = make([]uint8, size*size)
-	// 	} else {
-	// 		rl.DrawRectangle(225, 650, 150, 30, rl.Gray)
-	// 		rl.DrawText("Clear Grid", 255, 655, 18, rl.Black)
-	// 	}
-	// 	rl.DrawText("28 x 28", 460, 635, 16, rl.Gray)
+		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
+		makeGrid(gridInfo, gridArray)
+		// Grid clear button
+		// TODO make the values into variables
+		if rl.IsMouseButtonDown(0) && pos.X > 225 && pos.X < 375 && pos.Y > 650 && pos.Y < 680 {
+			rl.DrawRectangleLines(225, 650, 150, 30, rl.White)
+			rl.DrawText("Clear Grid", 255, 655, 18, rl.White)
+			gridArray = make([]uint8, size*size)
+		} else {
+			rl.DrawRectangle(225, 650, 150, 30, rl.Gray)
+			rl.DrawText("Clear Grid", 255, 655, 18, rl.Black)
+		}
+		rl.DrawText("28 x 28", 460, 635, 16, rl.Gray)
 
-	// 	rl.DrawText("Basic Neural Network", screenW/2-200, 20, 36, rl.Blue)
-	// 	// Show FPS
-	// 	fps := strconv.FormatInt(int64(rl.GetFPS()), 10)
-	// 	t := fmt.Sprintf("FPS: %s", fps)
-	// 	rl.DrawText(t, 20, 20, 20, rl.White)
+		rl.DrawText("Basic Neural Network", screenW/2-200, 20, 36, rl.Blue)
+		// Show FPS
+		fps := strconv.FormatInt(int64(rl.GetFPS()), 10)
+		t := fmt.Sprintf("FPS: %s", fps)
+		rl.DrawText(t, 20, 20, 20, rl.White)
 
-	// 	rl.EndDrawing()
+		rl.EndDrawing()
 
-	// }
+	}
 }
