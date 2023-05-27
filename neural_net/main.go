@@ -35,8 +35,15 @@ func makeGrid(g Grid, l []uint8) {
 	}
 }
 
-func drawNeuralNetwork() {
-	rl.DrawCircle(0, 0, 10, color.RGBA{255, 255, 255, 255})
+// Draw a neural network architecture
+// x, y are the drawing starting position
+// config list contains number of nodes in each layer
+func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
+	rl.DrawGrid(20, 10)
+	// nLayers := len(config)
+	cx := 0 + int32(radius)
+	cy := 0 + int32(radius)
+	rl.DrawCircle(cx, cy, float32(radius), color.RGBA{255, 255, 255, 255})
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
@@ -138,7 +145,7 @@ func main() {
 			}
 		}
 
-		drawNeuralNetwork()
+		drawNeuralNetwork(500, 300, 500, 500, 10, []int{700, 16, 16, 10})
 
 		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
 		makeGrid(gridInfo, gridArray)
