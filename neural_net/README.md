@@ -27,7 +27,8 @@ A bias is basically the threshold moved to the other side of the inequality and 
 A sigmoid functtion also called logistic function, is a method by which we map whatever number into a small range spanning between 0 and 1.
 $$\sigma(z) \equiv \frac{1}{1+e^{-z}}$$
 For our case, written such as:
-$$ \frac{1}{1+\exp(-\sum_j w_j x_j-b)}$$
+
+$$\frac{1}{1+\exp(-\sum_j w_j x_j-b)}$$
 
 ### Cost function
 
