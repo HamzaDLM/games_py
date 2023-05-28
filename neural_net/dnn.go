@@ -65,6 +65,10 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		}
 	}
 
+	// storing accuracy and loss
+	var accuracyList []float64
+	accuracyList = append(accuracyList, 0) // Initial accuracy
+
 	// GD technique
 	for i := 0; i < nn.epochs; i++ {
 		// Feedforward
@@ -102,7 +106,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		// Accuracy
 		fmt.Println(Yellow, "ACCURACY", Reset)
 		accuracy := getAccuracy(*y, y_hat)
-
+		accuracyList = append(accuracyList, accuracy)
 		// Loss
 		// TODO compute loss
 		fmt.Println(Yellow, "LOSS / Y vs onehot(Y)", Reset)
@@ -159,7 +163,7 @@ func nnLearn(nn *NeuralNetwork, x, y *Matrix) {
 		nn.weights[2].matrixSub(nn.weights[2], matrixMultScalar(&gradW3, nn.learningRate))
 		nn.biases[2] = matrixSubScalar(&nn.biases[2], gradB3*nn.learningRate)
 
-		fmt.Println(Green, "Accuracy at Iteration:", i, "is", accuracy, Reset)
+		fmt.Println(Green, "Accuracy at Iteration:", i, "is", accuracy, ", Delta is:", accuracy-accuracyList[i], Reset)
 	}
 }
 

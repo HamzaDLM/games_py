@@ -39,9 +39,11 @@ func makeGrid(g Grid, l []uint8) {
 // x, y are the drawing starting position
 // config list contains number of nodes in each layer
 func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
+	var offset int32 = 40 // How far the nodes are from each other vertically
 	// Connect nodes
 	for layer := 0; layer < len(config)-1; layer++ {
 		currentLayerNeurons := config[layer]
+		// limit number of neurons
 		if currentLayerNeurons > 20 {
 			currentLayerNeurons = 10
 		}
@@ -49,23 +51,23 @@ func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
 
 		for currentNeuron := 0; currentNeuron < currentLayerNeurons; currentNeuron++ {
 			for nextNeuron := 0; nextNeuron < nextLayerNeurons; nextNeuron++ {
-				currentX := int32((w/(len(config)+1))*(layer+1)) + int32(x)
-				nextX := int32((w/(len(config)+1))*(layer+2)) + int32(x)
+				currentX := int32((w/(len(config)+1))*(layer+1)) + int32(x) + int32(radius)
+				nextX := int32((w/(len(config)+1))*(layer+2)) + int32(x) - int32(radius)
 
 				currentY := int32((h-(int(currentLayerNeurons)*50))/2) + int32(y)
 				nextY := int32((h-(int(nextLayerNeurons)*50))/2) + int32(y)
-
 				rl.DrawLineEx(
-					rl.Vector2{X: float32(currentX), Y: float32(currentY + (int32(currentNeuron) * 50))},
-					rl.Vector2{X: float32(nextX), Y: float32(nextY + (int32(nextNeuron) * 50))},
+					rl.Vector2{X: float32(currentX), Y: float32(currentY + (int32(currentNeuron) * offset))},
+					rl.Vector2{X: float32(nextX), Y: float32(nextY + (int32(nextNeuron) * offset))},
 					1,
-					rl.White)
+					rl.Gray)
 			}
 		}
 	}
 	// Display nodes
 	for layer := 0; layer < len(config); layer++ {
 		layerNeurons := config[layer]
+		// limit number of neurons
 		if layerNeurons > 20 {
 			layerNeurons = 10
 		}
@@ -75,7 +77,12 @@ func drawNeuralNetwork(x, y, w, h, radius int, config []int) {
 		for neuron := 0; neuron < layerNeurons; neuron++ {
 			x := int32((w/(len(config)+1))*(layer+1)) + int32(x)
 
-			rl.DrawCircle(x, y+(int32(neuron)*50), float32(radius), rl.Blue)
+			rl.DrawCircle(x, y+(int32(neuron)*offset), float32(radius), rl.Black)
+			rl.DrawCircleLines(x, y+(int32(neuron)*offset), float32(radius), rl.White)
+			// Draw the numbers corresponding to the output
+			if layer == len(config)-1 {
+				rl.DrawText(strconv.Itoa(neuron), x+40, y+(int32(neuron)*offset)-8, 20, rl.Gray)
+			}
 		}
 	}
 }
@@ -148,6 +155,10 @@ func main() {
 	// Initialize window
 	rl.InitWindow(screenW, screenH, "Neural Network Visualization")
 	defer rl.CloseWindow()
+
+	froboto := rl.LoadFontEx("static/Roboto-Black.ttf", 24, nil)
+	defer rl.UnloadFont(froboto)
+
 	// set FPS
 	rl.SetTargetFPS(60)
 
@@ -174,9 +185,9 @@ func main() {
 			}
 		}
 
-		drawNeuralNetwork(600, 150, 1000, 600, 10, []int{700, 16, 16, 10})
+		drawNeuralNetwork(400, 300, 1200, 500, 10, []int{700, 16, 16, 10})
 
-		rl.DrawText("Drag to write a number", 190, 170, 10, rl.White)
+		rl.DrawText("Drag to write a number", 190, 170, 20, rl.White)
 		makeGrid(gridInfo, gridArray)
 		// Grid clear button
 		// TODO make the values into variables
@@ -185,12 +196,14 @@ func main() {
 			rl.DrawText("Clear Grid", 255, 655, 18, rl.White)
 			gridArray = make([]uint8, size*size)
 		} else {
-			rl.DrawRectangle(225, 650, 150, 30, rl.Gray)
-			rl.DrawText("Clear Grid", 255, 655, 18, rl.Black)
+			rl.DrawRectangle(240, 650, 150, 30, rl.Gray)
+			rl.DrawText("Clear Grid", 270, 655, 18, rl.Black)
+
 		}
 		rl.DrawText("28 x 28", 460, 635, 16, rl.Gray)
 
-		rl.DrawText("Basic Neural Network", screenW/2-200, 20, 36, rl.Blue)
+		// rl.DrawTextEx(froboto, "Basic Neural Network", rl.Vector2{X: screenW/2 - 200, Y: 20}, 48, 1, rl.White)
+		rl.DrawText("Deep Neural Network", screenW/2-200, 20, 36, rl.White)
 		// Show FPS
 		fps := strconv.FormatInt(int64(rl.GetFPS()), 10)
 		t := fmt.Sprintf("FPS: %s", fps)
