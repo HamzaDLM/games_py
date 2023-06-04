@@ -133,11 +133,12 @@ func parseTrain(filename string) (Matrix, Matrix) {
 
 func clearGridButton(bounds rl.Rectangle, text string) bool {
 	pos := rl.GetMousePosition()
-	state := true
+	state := false
 
 	if rl.CheckCollisionPointRec(pos, bounds) {
 		rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.Red)
 		rl.DrawText("text", 255, 655, 18, rl.White)
+		state = !state
 	} else {
 		rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.Yellow)
 		rl.DrawText("text", 255, 655, 18, rl.White)
