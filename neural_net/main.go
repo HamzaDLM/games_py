@@ -136,14 +136,15 @@ func clearGridButton(bounds rl.Rectangle, text string) bool {
 	state := false
 
 	if rl.CheckCollisionPointRec(pos, bounds) {
-		rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.Red)
+		rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.White)
 		rl.DrawText("text", 255, 655, 18, rl.White)
-		state = !state
-	} else {
-		rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.Yellow)
-		rl.DrawText("text", 255, 655, 18, rl.White)
+		if rl.IsMouseButtonDown(0) {
+			state = !state
+		} else {
+			rl.DrawRectangleLines(bounds.ToInt32().X, bounds.ToInt32().Y, bounds.ToInt32().Width, bounds.ToInt32().Height, rl.Gray)
+			rl.DrawText("text",  255, 655, 18, rl.Gray)
+		}
 	}
-
 	return state
 }
 

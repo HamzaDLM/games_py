@@ -194,7 +194,7 @@ def main():
     """Main game loop function"""
     pprint("STARTED MAIN LOOP")
     tick_counter = pygame.time.get_ticks()
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(-1)
     alpha = 255
     game_started = False
     running = True
@@ -222,8 +222,6 @@ def main():
                 player.display_player(*SPRITE_POSITION["normal"]), (player.x, player.y)
             )
 
-
-        
         pygame.display.flip()
         clock.tick(FPS)
 
