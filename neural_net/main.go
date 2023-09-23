@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
+	"github.com/HamzaDLM/simulations_and_games/matrix"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -29,7 +29,7 @@ func makeGrid(g Grid, l []uint8) {
 		for j := 0; j < g.size; j++ {
 			cx := int32(g.x + 15 + (i * 15))
 			cy := int32(g.y + 15 + (j * 15))
-			rl.DrawCircle(cx, cy, float32(g.r), color.RGBA{255, 255, 255, l[IX(i, j)]})
+			rl.DrawCircle(cx, cy, float32(g.r), color.RGBA{255, 255, 255, l[matrix.IX(i, j, size)]})
 			rl.DrawCircleLines(cx, cy, float32(g.r), color.RGBA{255, 255, 255, 100})
 		}
 	}
@@ -88,37 +88,37 @@ func drawNeuralNetwork(x, y, w, h, radius int, config []int, nn *NeuralNetwork) 
 }
 
 // Train csv file contains following format: Label, Pixel1, ..., PixelN
-func parseTrain(filename string) (Matrix, Matrix) {
+func parseTrain(filename string) (matrix.Matrix, matrix.Matrix) {
 	file, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	dataInputs := Matrix{
-		data:    make([]float64, 0),
-		rowSize: 784,
-		colSize: -1,
+	dataInputs := matrix.Matrix{
+		Data:    make([]float64, 0),
+		RowSize: 784,
+		ColSize: -1,
 	}
-	dataLabels := Matrix{
-		data:    make([]float64, 0),
-		rowSize: 0,
-		colSize: 1,
+	dataLabels := matrix.Matrix{
+		Data:    make([]float64, 0),
+		RowSize: 0,
+		ColSize: 1,
 	}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		row := scanner.Text()
 		s := strings.Split(row, ",")
-		dataInputs.colSize += 1
+		dataInputs.ColSize += 1
 		for i := 0; i < len(s); i++ {
 			d, err := strconv.ParseFloat(s[i], 64)
 			if err == nil {
 				if i == 0 {
-					dataLabels.data = append(dataLabels.data, d)
-					dataLabels.rowSize += 1
+					dataLabels.Data = append(dataLabels.Data, d)
+					dataLabels.RowSize += 1
 				} else {
-					dataInputs.data = append(dataInputs.data, d/255)
+					dataInputs.Data = append(dataInputs.Data, d/255)
 				}
 
 			}
@@ -155,18 +155,18 @@ func main() {
 		outputNeuronsSize:       10,
 		hiddenLayers:            2,
 		hiddenLayersNeuronsSize: []int{16, 16}, // for each hidden layer
-		weights:                 make([]Matrix, 0),
-		biases:                  make([]Matrix, 0),
+		weights:                 make([]matrix.Matrix, 0),
+		biases:                  make([]matrix.Matrix, 0),
 		epochs:                  1000,
 		learningRate:            0.1,
 	}
 
 	// // Import training set
-	// trainInputs, trainLabels := parseTrain("data/train.csv")
-	// // Start the training
-	// fmt.Println("Starting the learning process")
-	// nnLearn(&nn, &trainInputs, &trainLabels)
-
+	trainInputs, trainLabels := parseTrain("data/train.csv")
+	// Start the training
+	fmt.Println("Starting the learning process")
+	nnLearn(&nn, &trainInputs, &trainLabels)
+	return 
 	// Initialize window
 	rl.InitWindow(screenW, screenH, "Neural Network Visualization")
 	defer rl.CloseWindow()
@@ -193,7 +193,7 @@ func main() {
 					cy := int32(gridInfo.y + 15 + (j * 15))
 					if cx-int32(gridInfo.r)-4 < int32(pos.X) && int32(pos.X) <= cx+int32(gridInfo.r)+4 &&
 						cy-int32(gridInfo.r)-4 < int32(pos.Y) && int32(pos.Y) <= cy+int32(gridInfo.r)+4 {
-						gridArray[IX(i, j)] = 255
+						gridArray[matrix.IX(i, j, size)] = 255
 					}
 				}
 			}

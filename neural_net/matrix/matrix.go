@@ -23,13 +23,12 @@ func CreateMatrix(r int, c int) Matrix {
 		RowSize: r,
 		ColSize: c,
 	}
-
 }
 
 // Get 1 dimensional index for a 2 dimensional array
-func IX(row, col, size int) int {
+func IX(rowN, colN, colSize int) int {
 	// row id * ColSize + col id
-	return row*size + col
+	return rowN*colSize + colN
 }
 
 // Returns Matrix shape
@@ -38,8 +37,8 @@ func (m Matrix) Shape() string {
 }
 
 // Prints a matrix in a 2D shape
-func PrintMatrix(m Matrix) {
-	limit := 10
+func PrintMatrix(m *Matrix) {
+	limit := 10 //FIXME the fuk is this ?
 	fmt.Print(Red, "Matrix ------ rows ", m.RowSize, "x", m.ColSize, " cols\n", Reset)
 	for r := 0; r < int(m.RowSize); r++ {
 		for c := 0; c < int(m.ColSize); c++ {
@@ -158,13 +157,13 @@ func ScalarSubMatrix(m *Matrix, s float64) Matrix {
 
 // Perform multiplication on matrix by a scalar
 func MatrixMultScalar(m *Matrix, s float64) Matrix {
-	R := CreateMatrix(m.RowSize, m.ColSize)
-	for i := 0; i < R.RowSize; i++ {
-		for j := 0; j < R.ColSize; j++ {
-			R.Data[i*R.ColSize+j] *= s
+	resultMatrix := CreateMatrix(m.RowSize, m.ColSize)
+	for i := 0; i < resultMatrix.RowSize; i++ {
+		for j := 0; j < resultMatrix.ColSize; j++ {
+			resultMatrix.Data[IX(i, j, m.ColSize)] = m.Data[IX(i, j, m.ColSize)] * s
 		}
 	}
-	return R
+	return resultMatrix
 }
 
 func (m *Matrix) MatrixMultScalar2(s float64) {
@@ -197,4 +196,54 @@ func (R *Matrix) MatrixAddArray(A, B *Matrix) {
 			R.Data[i*A.ColSize+j] = A.Data[i*A.ColSize+j] + B.Data[i]
 		}
 	}
+}
+
+// Compares two matricies for if they similar
+func CompareMatricies(A, B *Matrix) bool {
+	if A.RowSize != B.RowSize || A.ColSize != B.ColSize {
+		return false
+	}
+	for i := 0; i < A.ColSize * A.RowSize; i++ {
+		if A.Data[i] != B.Data[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Transpose a matrix of n x m dimensions to m x n
+func Transpose(m *Matrix) Matrix {
+	transposed := CreateMatrix(m.ColSize, m.RowSize)
+	transposed.Data = []float64{}	
+	for c := 0; c < m.ColSize; c++ {
+		for r := 0; r < m.RowSize; r++ {
+			transposed.Data = append(transposed.Data, m.Data[IX(r, c, m.ColSize)])
+		}
+	}
+	return transposed
+}
+
+// Convert Matrix of shape n x 1 to one-hot-binary
+func OneHot(m Matrix) Matrix {
+	// Get the max value of the matrix to know how many columns we should have
+	maxVal := m.Data[0]
+	for i := 0; i < m.RowSize; i++ {
+		if m.Data[i] > maxVal {
+			maxVal = m.Data[i]
+		}
+	}
+	colValue := m.ColSize*(int(maxVal) + 1)
+	
+	oneHotMatrix := CreateMatrix(m.RowSize, colValue) // + 1 because 0 is represented by 0..01
+	
+	for i := 0; i < m.RowSize; i++ {
+		for j := 0; j < colValue; j++ {
+			if int(m.Data[i]) == j {
+				oneHotMatrix.Data[IX(i, j, colValue)] = 1
+			}
+		}
+	}
+	
+	return oneHotMatrix
 }

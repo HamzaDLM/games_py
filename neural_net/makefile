@@ -1,7 +1,7 @@
 all: build serve 
 
 test:
-	go test -v ./tests 
+	go test -v ./tests
 
 run:
 	go run .
