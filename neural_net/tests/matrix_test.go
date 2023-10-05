@@ -79,7 +79,7 @@ func TestMatrixSum1Axis(t *testing.T) {
 
 func TestOneHot(t *testing.T) {
 
-	m := matrix.CreateMatrix(3, 1) // 2 rows x 3 cols
+	m := matrix.CreateMatrix(3, 1) // 3 rows & 1 col
 
 	m.Data = []float64{
 		1,
@@ -89,7 +89,6 @@ func TestOneHot(t *testing.T) {
 
 	// Get a n x 1 matrix by summing to the first axis
 	summedMatrix := matrix.MatrixSum1Axis(&m)
-
 	oneHotMatrix := matrix.OneHot(summedMatrix)
 
 	for i, v := range oneHotMatrix.Data {
@@ -105,20 +104,20 @@ func TestTranspose(t *testing.T) {
 
 	m := initTestMatrix()
 	transposedMatrix := matrix.Transpose(&m)
-	
+
 	expectedMatrix := matrix.CreateMatrix(3, 2)
 	expectedMatrix.Data = []float64{1, 10, 2, 20, 3, 30}
-	
+
 	if !matrix.CompareMatricies(&transposedMatrix, &expectedMatrix) {
 		t.Error("Expected matrix is not found")
 	}
 }
 
 func TestMatrixSub(t *testing.T) {
-	
+
 	m1 := initTestMatrix()
 	m2 := initTestMatrix()
-	
+
 	m3 := matrix.CreateMatrix(m1.RowSize, m1.ColSize)
 
 	m3.MatrixSub(m1, m2)
@@ -131,7 +130,7 @@ func TestMatrixSub(t *testing.T) {
 }
 
 func TestMatrixMultScalar(t *testing.T) {
-	
+
 	m := initTestMatrix()
 
 	mResult := matrix.MatrixMultScalar(&m, 2)
@@ -144,4 +143,39 @@ func TestMatrixMultScalar(t *testing.T) {
 	}
 }
 
+func TestMatrixSum0Axis(t *testing.T) {
 
+	m := initTestMatrix()
+	mResult := matrix.MatrixSum0Axis(&m)
+
+	expectedMatrix := matrix.CreateMatrix(1, 3)
+	expectedMatrix.Data = []float64{11, 22, 33}
+
+	if !matrix.CompareMatricies(&mResult, &expectedMatrix) {
+		t.Error("Expected matrix is not found")
+	}
+}
+
+func TestMatrixLog(t *testing.T) {
+
+	m := initTestMatrix()
+	mResult := matrix.MatrixLog(&m)
+
+	expectedMatrix := matrix.CreateMatrix(2, 3)
+	expectedMatrix.Data = []float64{0.0000, 0.6931, 1.0986, 2.3026, 2.9957, 3.4012}
+
+	if !matrix.CompareMatricies(&mResult, &expectedMatrix) {
+		t.Error("Expected matrix is not found")
+	}
+}
+
+func TestMatrixMean(t *testing.T) {
+
+	m := initTestMatrix()
+	mResult := matrix.MatrixMean(&m)
+
+	if mResult != 11 {
+		t.Errorf("Expected 30 but found %f", mResult)
+	}
+
+}

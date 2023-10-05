@@ -30,7 +30,6 @@ type NeuralNetwork struct {
 
 // Main training function
 func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
-
 	// Check parameters
 	if len(nn.hiddenLayersNeuronsSize) != nn.hiddenLayers {
 		panic(fmt.Sprintf("The hidden layers neuron size array should contain %v elements.", nn.hiddenLayers))
@@ -56,7 +55,7 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 			nn.biases[i] = matrix.CreateMatrix(nn.hiddenLayersNeuronsSize[i], 1)
 		}
 	}
-	
+
 	// Fill weights and biases with random floats
 	for i := 0; i < len(nn.weights); i++ {
 		for j := 0; j < len(nn.weights[i].Data); j++ {
@@ -68,13 +67,13 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 	}
 
 	// storing accuracy and loss
-	var accuracyList []float64
-	accuracyList = append(accuracyList, 0) // Initial accuracy
+	accuracyList := []float64{0}
+	lossList := []float64{0}
 
 	// GD technique
 	for i := 0; i < nn.epochs; i++ {
 		// Feedforward
-		// TODO make it dynamic (accepting any range of hidden layers)
+		// TODO: make it dynamic (accepting any range of hidden layers)
 		z1 := matrix.CreateMatrix(nn.weights[0].RowSize, x.ColSize)
 		z1.MatrixDot(&nn.weights[0], x)
 		z1.MatrixAddArray(&z1, &nn.biases[0])
@@ -94,24 +93,29 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 		// Predict
 		y_hat := getPrediction(&a3)
 
+		fmt.Println("Printing Prediction Ŷ vs Y")
+		fmt.Println(y_hat.Data[:10])
+		fmt.Println(matrix.Transpose(y).Data[:10])
+
 		// Accuracy
 		accuracy := getAccuracy(*y, y_hat)
 		accuracyList = append(accuracyList, accuracy)
 
+		fmt.Println("Accuracy is:", accuracy)
+
 		// Loss
-		// TODO compute loss
-		one_hot_y := matrix.OneHot(matrix.Transpose(y))
-		// loss := crossEntropy(one_hot(y), &a3)
+		one_hot_y := matrix.OneHot(*y)
+		loss := crossEntropy(matrix.Transpose(&one_hot_y), &a3)
+		fmt.Println("Loss:", loss)
+		lossList = append(lossList, loss)
 
 		// Backpropagate
-		// FIXME size of gradB
-		var m float64 = float64(1.0 / float64(one_hot_y.ColSize))
+		var m float64 = float64(1.0 / float64(one_hot_y.RowSize))
 
-		// LAYER OUTPUT
+		// OUTPUT Layer
 		dZ3 := matrix.CreateMatrix(a3.RowSize, a3.ColSize)
-		dZ3.MatrixSub(a3, one_hot_y)
+		dZ3.MatrixSub(a3, matrix.Transpose(&one_hot_y))
 
-		matrix.PrintMatrix(&dZ3)
 		a2Transposed := matrix.Transpose(&a2)
 		gradW3 := matrix.CreateMatrix(dZ3.RowSize, a2Transposed.ColSize)
 		gradW3.MatrixDot(&dZ3, &a2Transposed)
@@ -121,8 +125,7 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 
 		// HIDDEN LAYER 2
 		dZ2 := matrix.CreateMatrix(a2.RowSize, a2.ColSize)
-		w3Transpose := matrix.Transpose(&nn.weights[1])
-		fmt.Println("shapes", w3Transpose.Shape(), dZ3.Shape())
+		w3Transpose := matrix.Transpose(&nn.weights[2])
 		dZ2.MatrixDot(&w3Transpose, &dZ3)
 		dZ2 = matrix.ApplyToMatrix(reluPrime, a2)
 
@@ -136,7 +139,7 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 
 		// HIDDEN LAYER 1
 		dZ1 := matrix.CreateMatrix(a1.RowSize, a1.ColSize)
-		w2Transpose := matrix.Transpose(&nn.weights[0])
+		w2Transpose := matrix.Transpose(&nn.weights[1])
 		dZ1.MatrixDot(&w2Transpose, &dZ2)
 		zReluPrime := matrix.ApplyToMatrix(reluPrime, z1)
 		dZ1 = matrix.MatrixMult(&dZ1, &zReluPrime)
@@ -148,18 +151,6 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 
 		gradB1 := matrix.MatrixSum1Axis(&dZ1)
 		gradB1.MatrixMultScalar2(m)
-
-		fmt.Println("Checking gradB1")
-		fmt.Println(m)
-		matrix.PrintMatrix(&dZ1)
-		matrix.PrintMatrix(&gradB1)
-
-		// fmt.Println("Checking weights w, b")
-		// printMatrix(nn.weights[0])
-		// printMatrix(nn.biases[0])
-		// fmt.Println("Checking activations z1, a1")
-		// printMatrix(z1)
-		// printMatrix(a1)
 
 		// Updating parameters
 		nn.weights[0].MatrixSub(nn.weights[0], matrix.MatrixMultScalar(&gradW1, nn.learningRate))
@@ -173,15 +164,23 @@ func nnLearn(nn *NeuralNetwork, x, y *matrix.Matrix) {
 
 		fmt.Println(Green, "Accuracy at Iteration:", i, "is", accuracy, ", Delta is:", accuracy-accuracyList[i], Reset)
 		fmt.Println("Prediction Y hat")
-		matrix.PrintMatrix(&y_hat)
+		// matrix.PrintMatrix(&y_hat)
 	}
 }
 
 func crossEntropy(y_one_hot matrix.Matrix, y_hat *matrix.Matrix) float64 {
+	yHat := matrix.LimitMatrix(y_hat, 1e-12, 1.1e-12)
 
-	return 0.0
+	log := matrix.MatrixLog(&yHat)
+	mult := matrix.MatrixMult(&y_one_hot, &log)
+	sum := matrix.MatrixSum0Axis(&mult)
+
+	cross_entropy := -matrix.MatrixMean(&sum)
+
+	return cross_entropy
 }
 
+// Get accuracy by getting the count of how many true predicted values divided by total number of elements
 func getAccuracy(correct matrix.Matrix, predicted matrix.Matrix) float64 {
 	if len(correct.Data) != len(predicted.Data) {
 		panic("Can't get accuracy, sizes are different.")
@@ -224,6 +223,7 @@ func reluPrime(z float64) float64 {
 	return 1
 }
 
+// Gives predicted probability
 func softmax(m *matrix.Matrix) matrix.Matrix {
 	r := matrix.CreateMatrix(m.RowSize, m.ColSize)
 	mExp := matrix.ApplyToMatrix(math.Exp, *m)

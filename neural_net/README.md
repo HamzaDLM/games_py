@@ -14,7 +14,7 @@ A perceptron is an artificial neuron that takes some inputs $x_1, x_2, x_3$ and 
 
 ### Network of perceptrons
 
-Generall, a perceptron won't be able to do much, so to accomplish a task such as predicting hand-written numbers we need a network of perceptrons that is basically layers of perceptrons put in front of each other. The layers between the inputs and the output are called hidden layers. An example of a two hidden layered network looks like the following:
+Generally, a perceptron won't be able to do much, so to accomplish a task such as predicting hand-written numbers we need a network of perceptrons that is basically layers of perceptrons put in front of each other. The layers between the inputs and the output are called hidden layers. An example of a two hidden layered network looks like the following:
 
 ![](data/2.png)
 
@@ -70,7 +70,10 @@ TODOs
 
 - Write tests for Matrice operations
 - Document code
+- Add cli commands to launch with GUI or without
+- Add options to save/use generated parameters
 
 #### Refs:
 
-Training/Test data used: https://www.kaggle.com/competitions/digit-recognizer/data
+- Training/Test data used: https://www.kaggle.com/competitions/digit-recognizer/data
+- http://neuralnetworksanddeeplearning.com/

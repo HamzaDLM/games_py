@@ -1,6 +1,9 @@
 package matrix
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 const (
 	Reset  = "\033[0m"
@@ -25,6 +28,14 @@ func CreateMatrix(r int, c int) Matrix {
 	}
 }
 
+func CloneMatrix(m *Matrix) Matrix {
+	
+	clonedMatrix := CreateMatrix(m.RowSize, m.ColSize)
+	clonedMatrix.Data = m.Data
+	
+	return clonedMatrix
+}
+
 // Get 1 dimensional index for a 2 dimensional array
 func IX(rowN, colN, colSize int) int {
 	// row id * ColSize + col id
@@ -38,7 +49,7 @@ func (m Matrix) Shape() string {
 
 // Prints a matrix in a 2D shape
 func PrintMatrix(m *Matrix) {
-	limit := 10 //FIXME the fuk is this ?
+	limit := 10
 	fmt.Print(Red, "Matrix ------ rows ", m.RowSize, "x", m.ColSize, " cols\n", Reset)
 	for r := 0; r < int(m.RowSize); r++ {
 		for c := 0; c < int(m.ColSize); c++ {
@@ -63,7 +74,7 @@ func ApplyToMatrix(f func(float64) float64, m Matrix) Matrix {
 	return r
 }
 
-// Sum elements of a matrix (np.Sum)
+// Sum elements of a matrix (np.sum)
 func MatrixSum(m *Matrix) float64 {
 	var sum float64 = 0
 	for i := 0; i < len(m.Data); i++ {
@@ -78,6 +89,17 @@ func MatrixSum1Axis(m *Matrix) Matrix {
 	for r := 0; r < m.RowSize; r++ {
 		for c := 0; c < m.ColSize; c++ {
 			result.Data[r] += m.Data[r*m.ColSize+c]
+		}
+	}
+	return result
+}
+
+// Similar to np.sum with axis=0
+func MatrixSum0Axis(m *Matrix) Matrix {
+	result := CreateMatrix(1, m.ColSize)
+	for c := 0; c < m.ColSize; c++ {
+		for r := 0; r < m.RowSize; r++ {
+			result.Data[IX(0, c, result.ColSize)] += m.Data[IX(r, c, m.ColSize)]
 		}
 	}
 	return result
@@ -116,11 +138,11 @@ func (R *Matrix) MatrixAdd(A, B *Matrix) {
 	}
 }
 
-// Perform Addition on two matrices of 1D form.
+// Perform multiplication on two matrices of 1D form.
 // Panics if dimensions are incorrect (dim A != dim B)
 func MatrixMult(A, B *Matrix) Matrix {
 	if A.ColSize != B.ColSize || A.RowSize != B.RowSize {
-		panic("The matrices can't be additioned.")
+		panic("The matrices can't be multiplied.")
 	}
 	R := CreateMatrix(A.RowSize, A.ColSize)
 
@@ -204,7 +226,7 @@ func CompareMatricies(A, B *Matrix) bool {
 		return false
 	}
 	for i := 0; i < A.ColSize * A.RowSize; i++ {
-		if A.Data[i] != B.Data[i] {
+		if math.Round(A.Data[i]) != math.Round(B.Data[i]) {
 			return false
 		}
 	}
@@ -247,3 +269,41 @@ func OneHot(m Matrix) Matrix {
 	
 	return oneHotMatrix
 }
+
+// Equivalent to np.clip
+func LimitMatrix(m *Matrix, minVal, maxVal float64) Matrix {
+
+	result := CloneMatrix(m)
+
+	for i := 0; i < len(m.Data); i++ {
+		if m.Data[i] < minVal {
+			result.Data[i] = minVal
+		}
+		if m.Data[i] > maxVal {
+			result.Data[i] = maxVal
+		}
+	}
+
+	return result 
+}
+
+func MatrixMean(m *Matrix) float64 {
+	summed := MatrixSum(m)
+	
+	return summed / float64(len(m.Data))
+}
+
+// Equivalent to np.log
+func MatrixLog(m *Matrix) Matrix {
+
+	result := CloneMatrix(m)
+
+	for i, v := range result.Data {
+		result.Data[i] = math.Log(v)
+	}
+	
+	return result
+}
+
+
+
